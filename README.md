@@ -26,4 +26,4 @@ The code has been developed and tested on a 64-bit version of Windows 10, Python
 
 ## How to use it
 
-1. First, the user
+1. First, the user must register as a developer on Facebook and then have an access token. For further details, follow this [tutorial] (https://towardsdatascience.com/how-to-use-facebook-graph-api-and-extract-data-using-python-1839e19d6999)
