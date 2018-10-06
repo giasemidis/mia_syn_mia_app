@@ -13,7 +13,7 @@ from auxiliary.io_json import read_json, write_json
 from auxiliary.read_results import read_results
 
 
-def main(post_id, results_file, out_file=None):
+def main(post_id, results_file, out_file):
     '''TO DO: 
         1) check time-zones
     '''
@@ -40,11 +40,17 @@ def main(post_id, results_file, out_file=None):
     message = post['message']
     end_time = re.search('\d{4,4}-\d{2,2}-\d{2,2} \d{2,2}:\d{2,2}:\d{2,2}', 
                          message)
-    deadline = datetime(end_time, '%Y-%m-%d %H:%M:%S')
+    if end_time is None:
+        print('Warning: Deadline timestamp not found in post.')
+        deadline = datetime.now()
+    else:
+        deadline = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
+
 
     # Get the comments from a post.
     comments = graph.get_connections(id=idd, connection_name='comments')
-    comments = comments['comments']['data']
+#    comments = comments['comments']['data']
+    comments = comments['data']
 
     users_dict = {}
 
@@ -63,15 +69,16 @@ def main(post_id, results_file, out_file=None):
             print('Warning: Incorrect prediction for user %s' % user)
             score = 0
         # check comment is in time
-        elif time < deadline:
+        elif time > deadline:
             print('Warning: User %s prediction off time' % user)
+            print(time, deadline)
             score = 0
         else:
             score = np.sum(pred == results)
 
-        users_dict[user] = score
+        users_dict[user] = int(score)
 
-    write_json(results_file, users_dict)
+    write_json(out_file, users_dict)
 
     return users_dict
 
@@ -88,4 +95,4 @@ if __name__ == "__main__":
     if args.post_id is None or args.results_file is None or args.output is None:
         parser.print_help()
     else:
-        main(args.post_id, args.results_file, args.output)
+        users_dict = main(args.post_id, args.results_file, args.output)

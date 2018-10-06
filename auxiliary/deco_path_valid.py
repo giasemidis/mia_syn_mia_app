@@ -30,7 +30,9 @@ def valid_folder(func):
     """
 
     def wrapper(filepath, *args, **kwargs):
-        if os.path.isdir(os.path.dirname(filepath)):
+        dirname = os.path.dirname(filepath)
+        dirname = dirname if dirname != '' else '.'
+        if os.path.isdir(dirname):
             a = func(filepath, *args, **kwargs)
             return a
         else:
