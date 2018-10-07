@@ -9,6 +9,7 @@ import numpy as np
 from datetime import datetime
 import re
 import facebook as fb
+import requests
 from auxiliary.io_json import read_json, write_json
 from auxiliary.read_results import read_results
 
@@ -50,33 +51,39 @@ def main(post_id, results_file, out_file):
     # Get the comments from a post.
     comments = graph.get_connections(id=idd, connection_name='comments')
 #    comments = comments['comments']['data']
-    comments = comments['data']
+#    comments = comments['data']
 
     users_dict = {}
+    i = 0
+    while True:
+        for comment in comments['data']:
+            user = comment['id']
+            text = comment['message']
+            time = datetime.strptime(comment['created_time'], dt_format)
+            pred = np.array([int(s) for s in text if s.isdigit()])
 
-    for comment in comments:
-        user = comment['id']
-        text = comment['message']
-        time = datetime.strptime(comment['created_time'], dt_format)
-        pred = np.array([int(s) for s in text if s.isdigit()])
+            # chekc if number of prediction is correct
+            if len(pred) != 8:
+                print('Warning: Incorrect number of predictions for user %s' % user)
+                score = 0
+            # check if predictions are either 1 or 2
+            elif not ((pred == 1) | (pred == 2)).all():
+                print('Warning: Incorrect prediction for user %s' % user)
+                score = 0
+            # check comment is in time
+            elif time > deadline:
+                print('Warning: User %s prediction off time' % user)
+                print(time, deadline)
+                score = 0
+            else:
+                score = np.sum(pred == results)
 
-        # chekc if number of prediction is correct
-        if len(pred) != 8:
-            print('Warning: Incorrect number of predictions for user %s' % user)
-            score = 0
-        # check if predictions are either 1 or 2
-        elif not ((pred == 1) | (pred == 2)).all():
-            print('Warning: Incorrect prediction for user %s' % user)
-            score = 0
-        # check comment is in time
-        elif time > deadline:
-            print('Warning: User %s prediction off time' % user)
-            print(time, deadline)
-            score = 0
+            users_dict[user] = int(score)
+
+        if 'next' in comments['paging']:
+            comments = requests.get(comments['paging']['next']).json()
         else:
-            score = np.sum(pred == results)
-
-        users_dict[user] = int(score)
+            break
 
     write_json(out_file, users_dict)
 
