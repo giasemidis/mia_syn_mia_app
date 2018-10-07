@@ -12,10 +12,9 @@ from auxiliary.io_json import read_json
 
 
 def main(table_file, scores_file, out_file):
-    '''
-    1) usernames
-    2) update existing table
-    3) MVP
+    '''To DO:
+        1) Update usernames
+        2) Insert simple models for benchmarking
     '''
     # username to user id
     username_id = read_json('usernames.json')
