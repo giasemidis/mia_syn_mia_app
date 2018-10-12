@@ -13,11 +13,9 @@ from auxiliary.io_json import read_json
 
 def main(table_file, scores_file, out_file):
     '''To DO:
-        1) Update usernames
-        2) Insert simple models for benchmarking
+        1) Insert simple models for benchmarking
     '''
-    # username to user id
-    username_id = read_json('usernames.json')
+
     table = pd.read_csv(table_file)
     scores = read_json(scores_file)
 
@@ -26,7 +24,7 @@ def main(table_file, scores_file, out_file):
 
     mvp_score = max([scores[u] for u in scores.keys()])
     for i, name in enumerate(table.team):
-        score = scores[username_id[name]]
+        score = scores[name]
         points[i] = points[i] + score
         if score == mvp_score:
             mvps[i] += 1
