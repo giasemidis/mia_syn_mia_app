@@ -6,6 +6,7 @@ Created on Wed Oct  3 23:53:57 2018
 """
 import argparse
 import numpy as np
+import pandas as pd
 from datetime import datetime
 import re
 import pytz
@@ -16,7 +17,7 @@ from auxiliary.read_results import read_results
 from auxiliary.convert_timezone import convert_timezone
 
 
-def main(post_id, results_file, out_file):
+def main(post_id, results_file, nday):
     '''TO DO: 
         1) come with a criterion to check whether a comment gives a prediction
             or just discusses things.
@@ -65,7 +66,8 @@ def main(post_id, results_file, out_file):
     # Get the comments from a post.
     comments = graph.get_connections(id=idd, connection_name='comments')
 
-    users_dict = {}
+    score_dict = {}
+    predict_dict = {}
 
     while True:
         for comment in comments['data']:
@@ -81,6 +83,8 @@ def main(post_id, results_file, out_file):
             if user == '' or len(user) > 25:
                 user = ''
                 print('Warning: Username was not found, comment id %s' % comment_id)
+                print(text)
+                continue
 
             # find prediction
             pred = np.array([int(s) for s in text if s.isdigit()])
@@ -93,12 +97,14 @@ def main(post_id, results_file, out_file):
             if len(pred) != n_games:
                 print('Warning: Incorrect number of predictions for user %s in comment %s' 
                       % (user, comment_id))
+                print(text)
                 score = 0
 
             # check if predictions are either 1 or 2
             elif not ((pred == 1) | (pred == 2)).all():
                 print('Warning: Incorrect prediction for user %s in comment %s' 
                       % (user, comment_id))
+                print(text)
                 score = 0
 
             else:
@@ -112,14 +118,33 @@ def main(post_id, results_file, out_file):
 
             # TO DO: check if user has given prediction and decide what to do.
             # if user in users_dict.keys():
-            users_dict[user] = int(score)
+            score_dict[user] = int(score)
+            predict_dict[user] = pred
 
         if 'next' in comments['paging']:
             comments = requests.get(comments['paging']['next']).json()
         else:
             break
 
-    write_json(out_file, users_dict)
+    # make dataframe from users' score dictionary
+    df_scores = pd.DataFrame.from_dict(score_dict, orient='index', 
+                                       columns=['Score'])
+    # make dataframe from users' predictions dictionary
+    df_pred = pd.DataFrame.from_dict(predict_dict, orient='index',
+                                     columns=['game_%d' % s for s in 
+                                              range(1, n_games+1)])
+
+    # merge the two dataframe based on users' names.
+    df = df_scores.merge(df_pred, left_index=True, right_index=True)
+    # sort by score (descending)
+    df.sort_values('Score', ascending=False, inplace=True)
+    
+    # save dataframe
+    df.to_csv('output/predictions_day_%d.csv' % nday, sep=',', 
+                     index_label='Name', encoding='utf-8')
+    
+    # save scores json
+    write_json('output/scores_day_%d.json' % nday, score_dict)
 
     return
 
@@ -130,10 +155,12 @@ if __name__ == "__main__":
                         help="the id of the post")
     parser.add_argument('-r', '--results_file', type=str,
                         help="file with the results")
-    parser.add_argument('-o', '--output', type=str,
-                        help="output file to write data")
+    parser.add_argument('-d', '--day', type=int,
+                        help="day number")
+#    parser.add_argument('-o', '--output', type=str,
+#                        help="output file to write data")
     args = parser.parse_args()
-    if args.post_id is None or args.results_file is None or args.output is None:
+    if args.post_id is None or args.results_file is None or args.day is None:
         parser.print_help()
     else:
-        message = main(args.post_id, args.results_file, args.output)
+        main(args.post_id, args.results_file, args.day)
