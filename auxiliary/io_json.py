@@ -15,8 +15,8 @@ def write_json(file, data):
     '''
     Writes data into json file
     '''
-    with open(file, 'w') as outfile:
-        json.dump(data, outfile)
+    with open(file, 'w', encoding='utf8') as outfile:
+        json.dump(data, outfile, ensure_ascii=False)
     return
 
 
@@ -25,6 +25,6 @@ def read_json(file):
     '''
     Reads data from json file
     '''
-    with open(file, 'r') as outfile:
+    with open(file, 'r', encoding='utf8') as outfile:
         data = json.load(outfile)
     return data
