@@ -13,7 +13,8 @@ from auxiliary.io_json import read_json
 
 def main(table_file, scores_file, out_file):
     '''To DO:
-        1) Insert simple models for benchmarking
+        1) improve performance and design, use dataframe merge
+        2) Insert simple models for benchmarking
     '''
 
     table = pd.read_csv(table_file)
