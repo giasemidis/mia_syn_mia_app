@@ -22,21 +22,24 @@ def main(post_id, results_file, nday):
         1) come with a criterion to check whether a comment gives a prediction
             or just discusses things.
     '''
+    # tokens file
+    tokens_file = 'tokens.json'
+    tokens = tokens = read_json(tokens_file)
+    token = tokens['token']
+    user_id = tokens['user_id']
+    
     # configuration file
     config_file = 'config.json'
     configs = read_json(config_file)
-    token = configs['token']
-    user_id = configs['user_id']
+    n_games = configs['n_games']
+    dt_format = configs['dt_format'] #'%Y.%d.%m. %H:%M' # '%Y-%m-%d %H:%M:%S'
+    pattern = configs['dt_pattern']
 
-#    # username to user id 
-#    usernames = read_json('usernames.csv')
-
+    fb_format = '%Y-%m-%dT%H:%M:%S+0000'
+    
     # read actual results
     results = read_results(results_file)
     
-    n_games = 8
-    fb_format = '%Y-%m-%dT%H:%M:%S+0000'
-
     # make graph
     graph = fb.GraphAPI(access_token=token, version=2.7)
     # graph id = user_id_post_id
@@ -44,10 +47,10 @@ def main(post_id, results_file, nday):
     # get text of post
     post = graph.get_object(id=idd)
     message = post['message']
-
+    post_time = datetime.strptime(post['created_time'], fb_format)
+  
     # extract game times from the post
-    pattern = '\d{2,2}\.\d{2,2}\. \d{2,2}:\d{2,2}'
-    dt_format = '%Y.%d.%m. %H:%M' # '%Y-%m-%d %H:%M:%S'
+#    pattern =  #'\d{2,2}\.\d{2,2}\. \d{2,2}:\d{2,2}'
 #    end_time = re.search('\d{4,4}-\d{2,2}-\d{2,2} \d{2,2}:\d{2,2}:\d{2,2}', 
 #                         message)
     end_times = re.findall(pattern, message)
@@ -57,8 +60,8 @@ def main(post_id, results_file, nday):
         t_now = datetime.utcnow()
         game_times_utc = np.array([t_now.replace(tzinfo=pytz.UTC) for i in range(n_games)])
     else:
-#        deadline = datetime.strptime(end_times, dt_format)
-        game_times = [datetime.strptime('2018.'+t, dt_format) for t in end_times]
+        game_times = [datetime.strptime(str(post_time.year)+'.'+t, dt_format) 
+                        for t in end_times]
         game_times_utc = np.array([convert_timezone(t, 
                                         from_tz='Europe/Athens', to_tz='UTC')
                                   for t in game_times])
@@ -71,7 +74,6 @@ def main(post_id, results_file, nday):
 
     while True:
         for comment in comments['data']:
-#            print(comment.keys())
             comment_id = comment['id']
             text = comment['message']
             time = datetime.strptime(comment['created_time'], fb_format)
@@ -136,12 +138,13 @@ def main(post_id, results_file, nday):
 
     # merge the two dataframe based on users' names.
     df = df_scores.merge(df_pred, left_index=True, right_index=True)
-    # sort by score (descending)
-    df.sort_values('Score', ascending=False, inplace=True)
+    # sort by score (descending) and by name (descending)
+    df.rename_axis('Name', axis=0, inplace=True)
+    df.sort_values(['Score', 'Name'], ascending=[False, True], inplace=True)
     
     # save dataframe
     df.to_csv('output/predictions_day_%d.csv' % nday, sep=',', 
-                     index_label='Name', encoding='utf-8')
+                     index=True, encoding='utf-8')
     
     # save scores json
     write_json('output/scores_day_%d.json' % nday, score_dict)
