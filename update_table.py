@@ -9,6 +9,8 @@ import argparse
 import pandas as pd
 import numpy as np
 from auxiliary.io_json import read_json
+import win_unicode_console
+win_unicode_console.enable()
 
 
 def main(table_file, scores_file, out_file):
@@ -39,16 +41,19 @@ def main(table_file, scores_file, out_file):
     misses = table['Missed Rounds'].values
 
     # find mvp score
-    mvp_score = max([scores[u] for u in scores.keys()])
+    score_list = [scores[u] for u in scores.keys()]
+    mvp_score = max(score_list)
+    min_score = min(score_list)
     
     # update table
     for i, name in enumerate(table.Name.values):
         if name in scores.keys():
             score = scores[name]
-            points[i] = points[i] + score
+            points[i] += score
             if score == mvp_score:
                 mvps[i] += 1
         else:
+            points[i] += min_score
             misses[i] += 1
     
     # check if user has missed more than four rounds.
