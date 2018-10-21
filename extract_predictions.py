@@ -15,6 +15,8 @@ import requests
 from auxiliary.io_json import read_json, write_json
 from auxiliary.read_results import read_results
 from auxiliary.convert_timezone import convert_timezone
+import win_unicode_console
+win_unicode_console.enable()
 
 
 def main(post_id, results_file, nday):
@@ -95,28 +97,33 @@ def main(post_id, results_file, nday):
 #            if 'from' in comment.keys():
 #                print(text, user, time.astimezone())
 
-            # chekc if number of prediction is correct
+            # check if predictions are either 1 or 2
+            if not ((pred == 1) | (pred == 2)).all():
+                print('Warning: Incorrect prediction for user %s in comment %s' 
+                      % (user, comment_id))
+                print(text)
+                tmp = pred.copy()
+                tmp[~((pred == 1) | (pred == 2))] = 0
+
+            # check if number of prediction is correct
             if len(pred) != n_games:
                 print('Warning: Incorrect number of predictions for user %s in comment %s' 
                       % (user, comment_id))
                 print(text)
-                score = 0
+                if len(pred) < n_games:
+                    pred = np.append(pred, np.zeros(n_games-pred.shape[0], 
+                                                    dtype=int))
+                else:
+                    pred = pred[:n_games]
 
-            # check if predictions are either 1 or 2
-            elif not ((pred == 1) | (pred == 2)).all():
-                print('Warning: Incorrect prediction for user %s in comment %s' 
-                      % (user, comment_id))
-                print(text)
-                score = 0
-
-            else:
-                # check comment is prior game-times.
-                ii = time < game_times_utc
-                if not ii.all():
-                    print('Warning: %d Prediction(s) off time for user %s in comment id %s' 
-                          % (np.sum(~ii), user, comment_id))
-                # if comment after any game started, give 0 points for this game
-                score = np.sum(pred[ii] == results[ii])
+            # check comment is prior game-times.
+            ii = time < game_times_utc
+            if not ii.all():
+                print('Warning: %d Prediction(s) off time for user %s in comment id %s' 
+                      % (np.sum(~ii), user, comment_id))
+            # if comment after any game started, give 0 points for this game
+            pred[~ii] = 0
+            score = np.sum(pred[ii] == results[ii])
 
             # TO DO: check if user has given prediction and decide what to do.
             # if user in users_dict.keys():
