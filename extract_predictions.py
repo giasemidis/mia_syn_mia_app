@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 import re
+import os
 import pytz
 import facebook as fb
 import requests
@@ -36,6 +37,7 @@ def main(post_id, results_file, nday):
     n_games = configs['n_games']
     dt_format = configs['dt_format'] #'%Y.%d.%m. %H:%M' # '%Y-%m-%d %H:%M:%S'
     pattern = configs['dt_pattern']
+    out_dir = configs['output_directory']
 
     fb_format = '%Y-%m-%dT%H:%M:%S+0000'
     
@@ -150,11 +152,11 @@ def main(post_id, results_file, nday):
     df.sort_values(['Score', 'Name'], ascending=[False, True], inplace=True)
     
     # save dataframe
-    df.to_csv('output/predictions_day_%d.csv' % nday, sep=',', 
+    df.to_csv(os.path.join(out_dir, 'predictions_day_%d.csv' % nday), sep=',', 
                      index=True, encoding='utf-8')
     
     # save scores json
-    write_json('output/scores_day_%d.json' % nday, score_dict)
+    write_json(os.path.join(out_dir, 'scores_day_%d.json' % nday), score_dict)
 
     return
 
