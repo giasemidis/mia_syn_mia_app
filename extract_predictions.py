@@ -156,7 +156,7 @@ def main(post_id, results_file, nday):
                      index=True, encoding='utf-8')
     
     # save scores json
-    write_json(os.path.join(out_dir, 'scores_day_%d.json' % nday), score_dict)
+#    write_json(os.path.join(out_dir, 'scores_day_%d.json' % nday), score_dict)
 
     return
 
