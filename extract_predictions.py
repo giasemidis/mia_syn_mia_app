@@ -16,6 +16,7 @@ import requests
 from auxiliary.io_json import read_json, write_json
 from auxiliary.read_results import read_results
 from auxiliary.convert_timezone import convert_timezone
+from auxiliary.valid_post import valid_post
 import win_unicode_console
 win_unicode_console.enable()
 
@@ -84,39 +85,12 @@ def main(post_id, results_file, nday):
             # make the time variable datetime aware
             time = time.replace(tzinfo=pytz.UTC)
 
-            # find username
-            user = ''.join([s for s in text if s.isalpha() or s.isspace()]).strip()
-            if user == '' or len(user) > 25:
-                user = ''
-                print('Warning: Username was not found, comment id %s' % comment_id)
-                print(text)
+            is_valid, user, pred = valid_post(text, comment_id=comment_id,
+                                              n_games=n_games)
+
+            if is_valid is False:
+                print('Comment id %s not valid' % comment_id)
                 continue
-
-            # find prediction
-            pred = np.array([int(s) for s in text if s.isdigit()])
-            
-#            # check if 'from' info is in the fetched comment.
-#            if 'from' in comment.keys():
-#                print(text, user, time.astimezone())
-
-            # check if predictions are either 1 or 2
-            if not ((pred == 1) | (pred == 2)).all():
-                print('Warning: Incorrect prediction for user %s in comment %s' 
-                      % (user, comment_id))
-                print(text)
-                tmp = pred.copy()
-                tmp[~((pred == 1) | (pred == 2))] = 0
-
-            # check if number of prediction is correct
-            if len(pred) != n_games:
-                print('Warning: Incorrect number of predictions for user %s in comment %s' 
-                      % (user, comment_id))
-                print(text)
-                if len(pred) < n_games:
-                    pred = np.append(pred, np.zeros(n_games-pred.shape[0], 
-                                                    dtype=int))
-                else:
-                    pred = pred[:n_games]
 
             # check comment is prior game-times.
             ii = time < game_times_utc
@@ -153,7 +127,7 @@ def main(post_id, results_file, nday):
     
     # save dataframe
     df.to_csv(os.path.join(out_dir, 'predictions_day_%d.csv' % nday), sep=',', 
-                     index=True, encoding='utf-8')
+              index=True, encoding='utf-8')
     
     # save scores json
 #    write_json(os.path.join(out_dir, 'scores_day_%d.json' % nday), score_dict)
