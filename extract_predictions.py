@@ -93,7 +93,12 @@ def main(post_id, results_file, nday):
                 continue
 
             # find prediction
-            pred = np.array([int(s) for s in text if s.isdigit()])
+            pred = np.array([int(s) for s in text if s.isdigit()], dtype=int)
+
+            if pred.size == 0:
+                print('Warning: No prediction found, comment id %s' % comment_id)
+                print(text)
+                continue
             
 #            # check if 'from' info is in the fetched comment.
 #            if 'from' in comment.keys():
