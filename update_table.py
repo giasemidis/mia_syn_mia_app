@@ -8,19 +8,41 @@ Created on Sat Oct  6 18:14:07 2018
 import argparse
 import pandas as pd
 import numpy as np
+import os
+import sys
 from auxiliary.io_json import read_json
 import win_unicode_console
 win_unicode_console.enable()
 
 
-def main(table_file, scores_file, out_file):
+def main(day):
     '''To DO:
         1) Insert simple models for benchmarking
     '''
 
-    table = pd.read_csv(table_file)
-#    scores = read_json(scores_file)
+    if day < 1:
+        sys.exit('Round must be non-negative integer')
+
+    config_file = 'config.json'
+    configs = read_json(config_file)
+    out_dir = configs['output_directory']
+    
+    table_file = os.path.join(out_dir, 'table_day_%d.csv' % (day-1))
+    scores_file = os.path.join(out_dir, 'predictions_day_%d.csv' % day)
+    out_file = os.path.join(out_dir, 'table_day_%d.csv' % day)
+    
     scores = pd.read_csv(scores_file)
+    if day == 1:
+        # set initial table, all players have zero points, mvps, etc.
+        table = pd.DataFrame(np.arange(1, scores.shape[0]+1, dtype=int), 
+                             columns=['Position'])        
+        table['Name'] = scores['Name'].values
+        table['MVP'] = np.zeros((scores.shape[0], 1), dtype=int)
+        table['Points'] = np.zeros((scores.shape[0], 1), dtype=int)
+        table['Missed Rounds'] = np.zeros((scores.shape[0], 1), dtype=int)
+    else:
+        # read the table of the previous round
+        table = pd.read_csv(table_file)        
     
     # check if there is a new user, give the lowest score.
     min_points = np.min(table.Points.values)
@@ -41,7 +63,7 @@ def main(table_file, scores_file, out_file):
     if any(jj):
         df_new.loc[jj, 'Points'] = min_points
         df_new.loc[jj, 'MVP'] = 0
-        df_new.loc[jj, 'Missed Rounds'] = 0        
+        df_new.loc[jj, 'Missed Rounds'] = day-1       
         for name in df_new['Name'][jj].values:
             print('%s is a new player' % name)
 
@@ -82,14 +104,16 @@ def main(table_file, scores_file, out_file):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--table_file', type=str,
-                        help="the id of the post")
-    parser.add_argument('-s', '--scores_file', type=str,
-                        help="the id of the post")
-    parser.add_argument('-o', '--output', type=str,
-                        help="output file to write data")
+    parser.add_argument('-d','--day', type=int,
+                        help='the day (round) of the regular season')
+#    parser.add_argument('-t', '--table_file', type=str,
+#                        help="the id of the post")
+#    parser.add_argument('-s', '--scores_file', type=str,
+#                        help="the id of the post")
+#    parser.add_argument('-o', '--output', type=str,
+#                        help="output file to write data")
     args = parser.parse_args()
-    if args.table_file is None or args.scores_file is None or args.output is None:
+    if args.day is None:
         parser.print_help()
     else:
-        main(args.table_file, args.scores_file, args.output)
+        main(args.day)
