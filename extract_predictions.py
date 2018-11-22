@@ -172,10 +172,10 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--results_file', type=str,
                         help="file with the results")
     parser.add_argument('-d', '--day', type=int,
-                        help="the day (round) of the regular season)
+                        help="the day (round) of the regular season")
     args = parser.parse_args()
     
-    # results_file is optional
+    # results_file is optional.
     if args.post_id is None or args.day is None:
         parser.print_help()
     else:
