@@ -130,7 +130,7 @@ def main(post_id, results_file, nday):
     # save dataframe
     df.to_csv(os.path.join(out_dir, 'predictions_day_%d.csv' % nday), sep=',', 
               index=True, encoding='utf-8')
-    
+
     return
 
 
