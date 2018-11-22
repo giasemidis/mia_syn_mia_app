@@ -28,7 +28,7 @@ def main(post_id, results_file, nday):
     '''
     # tokens file
     tokens_file = 'tokens.json'
-    tokens = tokens = read_json(tokens_file)
+    tokens = read_json(tokens_file)
     token = tokens['token']
     user_id = tokens['user_id']
     
@@ -43,6 +43,8 @@ def main(post_id, results_file, nday):
     fb_format = '%Y-%m-%dT%H:%M:%S+0000'
     
     # read actual results
+    if results_file is None:
+        results_file = os.path.join(out_dir, 'results_day_%d.txt' % nday)
     results = read_results(results_file)
     
     # make graph
@@ -129,9 +131,6 @@ def main(post_id, results_file, nday):
     df.to_csv(os.path.join(out_dir, 'predictions_day_%d.csv' % nday), sep=',', 
               index=True, encoding='utf-8')
     
-    # save scores json
-#    write_json(os.path.join(out_dir, 'scores_day_%d.json' % nday), score_dict)
-
     return
 
 
@@ -142,11 +141,11 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--results_file', type=str,
                         help="file with the results")
     parser.add_argument('-d', '--day', type=int,
-                        help="day number")
-#    parser.add_argument('-o', '--output', type=str,
-#                        help="output file to write data")
+                        help="the day (round) of the regular season")
     args = parser.parse_args()
-    if args.post_id is None or args.results_file is None or args.day is None:
+    
+    # results_file is optional.
+    if args.post_id is None or args.day is None:
         parser.print_help()
     else:
         main(args.post_id, args.results_file, args.day)
