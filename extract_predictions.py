@@ -13,7 +13,7 @@ import os
 import pytz
 import facebook as fb
 import requests
-from auxiliary.io_json import read_json, write_json
+from auxiliary.io_json import read_json
 from auxiliary.read_results import read_results
 from auxiliary.convert_timezone import convert_timezone
 from auxiliary.valid_post import valid_post
