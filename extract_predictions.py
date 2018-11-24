@@ -45,6 +45,8 @@ def main(post_id, results_file, nday):
     if results_file is None:
         results_file = os.path.join(out_dir, 'results_day_%d.txt' % nday)
     results = read_results(results_file)
+    if results.shape[0] != n_games:
+        sys.exit('Results not valid')
     
     # make graph
     graph = fb.GraphAPI(access_token=token, version=2.7)
