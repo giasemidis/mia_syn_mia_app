@@ -33,7 +33,7 @@ def main(post_id, results_file, nday):
     user_id = tokens['user_id']
     
     # configuration file
-    config_file = 'config.json'
+    config_file = 'config/config.json'
     configs = read_json(config_file)
     n_games = configs['n_games']
     dt_format = configs['dt_format'] #'%Y.%d.%m. %H:%M' # '%Y-%m-%d %H:%M:%S'
