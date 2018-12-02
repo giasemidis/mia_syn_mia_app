@@ -18,6 +18,7 @@ from auxiliary.io_json import read_json
 from auxiliary.read_results import read_results
 from auxiliary.convert_timezone import convert_timezone
 from auxiliary.valid_post import valid_post
+from auxiliary.scrap_results import get_results
 import win_unicode_console
 win_unicode_console.enable()
 
@@ -28,39 +29,22 @@ def main(post_id, results_file, nday):
             or just discusses things.
     '''
     # tokens file
-    tokens_file = 'tokens.json'
+    tokens_file = 'config/tokens.json'
     tokens = read_json(tokens_file)
     token = tokens['token']
     user_id = tokens['user_id']
     
     # configuration file
-    config_file = 'config.json'
+    config_file = 'config/config.json'
     configs = read_json(config_file)
     n_games = configs['n_games']
+    season = configs['season']
     dt_format = configs['dt_format'] #'%Y.%d.%m. %H:%M' # '%Y-%m-%d %H:%M:%S'
     pattern = configs['dt_pattern'] #'\d{2,2}\.\d{2,2}\. \d{2,2}:\d{2,2}'
     out_dir = configs['output_directory']
 
     fb_format = '%Y-%m-%dT%H:%M:%S+0000'
-    
-    # read actual results
-    if results_file is None:
-        results_file = os.path.join(out_dir, 'results_day_%d.txt' % nday)
-    results = read_results(results_file)
-
-    # fetch actual results from the web -- restrictions apply
-#    repat = re.compile(pattern)
-#    games_times = re.findall(pattern+'[^\d\n]*', message)
-#    games = [[u.strip() for u in repat.sub('', game).split('-')] for 
-#              game in games_times]
-#    if len(games) != n_games:
-#        sys.exit('Number of games identified on FB post is incorrect')
-#    else:
-#        results = get_results(games, day, season)
-
-    if results.shape[0] != n_games:
-        sys.exit('Results not valid')
-    
+  
     # make graph
     graph = fb.GraphAPI(access_token=token, version=2.7)
     # graph id = user_id_post_id
@@ -69,7 +53,31 @@ def main(post_id, results_file, nday):
     post = graph.get_object(id=idd)
     message = post['message']
     post_time = datetime.strptime(post['created_time'], fb_format)
-  
+
+    # read actual results
+#    if results_file is None:
+#        results_file = os.path.join(out_dir, 'results_day_%d.txt' % nday)
+#    results = read_results(results_file)
+
+    # fetch actual results from the web -- restrictions apply
+    repat = re.compile(pattern)
+    games_times = re.findall(pattern+'[^\d\n]*', message)
+    games = [[u.strip() for u in repat.sub('', game).split('-')] for 
+              game in games_times]
+    if len(games) != n_games:
+        sys.exit('Number of games identified on FB post is incorrect')
+    else:
+        results = get_results(games, nday, season)
+        # write results to file
+        if results_file is None:
+            results_file = os.path.join(out_dir, 'results_day_%d.txt' % nday)
+            np.savetxt(results_file, results[None], delimiter=' ', fmt='%d')
+            
+    print(results)
+
+    if results.shape[0] != n_games:
+        sys.exit('Results not valid')
+
     # extract game times from the post
     end_times = re.findall(pattern, message)
 
