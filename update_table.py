@@ -23,7 +23,7 @@ def main(day):
     if day < 1:
         sys.exit('Round must be non-negative integer')
 
-    config_file = 'config.json'
+    config_file = 'config/config.json'
     configs = read_json(config_file)
     out_dir = configs['output_directory']
     

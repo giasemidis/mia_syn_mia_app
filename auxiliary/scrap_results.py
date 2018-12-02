@@ -66,7 +66,7 @@ def get_results(games_fb, day, season):
         print('Warning: Number of games is inconsistent')
 
     #first map teams in greek to official english names
-    mappednames = read_json('team_names_mapping.json')
+    mappednames = read_json('config/team_names_mapping.json')
     games_fb.replace(mappednames, inplace=True)
 
     # after converting the names of the teams, merge the two dataframes
@@ -82,4 +82,4 @@ def get_results(games_fb, day, season):
 #        print("Warning: Shape of 'results' var is inconsistent")
         sys.exit("Error: Shape of 'results' var is inconsistent.")
 
-    return results, final
+    return results
