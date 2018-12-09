@@ -44,7 +44,7 @@ def main(post_id, results_file, nday):
     out_dir = configs['output_directory']
 
     fb_format = '%Y-%m-%dT%H:%M:%S+0000'
-  
+
     # make graph
     graph = fb.GraphAPI(access_token=token, version=3.0)
     # graph id = user_id_post_id
@@ -54,25 +54,31 @@ def main(post_id, results_file, nday):
     message = post['message']
     post_time = datetime.strptime(post['created_time'], fb_format)
 
-    # read actual results
-#    if results_file is None:
-#        results_file = os.path.join(out_dir, 'results_day_%d.txt' % nday)
-#    results = read_results(results_file)
-
     # fetch actual results from the web -- restrictions apply
+    if results_file is None:
+        results_file = os.path.join(out_dir, 'results_day_%d.txt' % nday)
     repat = re.compile(pattern)
     games_times = re.findall(pattern+'[^\d\n]*', message)
     games = [[u.strip() for u in repat.sub('', game).split('-')] for 
               game in games_times]
     if len(games) != n_games:
+        # check if the number of games identified in the post is correct. 
         sys.exit('Number of games identified on FB post is incorrect')
     else:
-        results = get_results(games, nday, season)
-        # write results to file
-        if results_file is None:
-            results_file = os.path.join(out_dir, 'results_day_%d.txt' % nday)
+        try:
+            # fetch results from the web
+            results = get_results(games, nday, season)
+            # write results to file
             np.savetxt(results_file, results[None], delimiter=' ', fmt='%d')
-            
+        except requests.exceptions.ConnectionError:
+            # if there is a connection error, read results from file.
+            print('Warning: Unable to fetch results from the internet. Try from flat file.')
+            # if file does not exist, exit program and ask for file of results.
+            if not os.path.isfile(results_file):
+                sys.exit('Error: Provide correct file with the results.')
+            # read actual results
+            results = read_results(results_file)
+                            
     print(results)
 
     if results.shape[0] != n_games:
