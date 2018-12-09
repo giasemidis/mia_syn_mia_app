@@ -11,6 +11,7 @@ import numpy as np
 import os
 import sys
 from auxiliary.io_json import read_json
+from auxiliary.fuzzy_fix_names import fuzzy_fix_names
 import win_unicode_console
 win_unicode_console.enable()
 
@@ -26,6 +27,7 @@ def main(day):
     config_file = 'config/config.json'
     configs = read_json(config_file)
     out_dir = configs['output_directory']
+    fuzzy_thr = configs['fuzzy_threshold']
     
     table_file = os.path.join(out_dir, 'table_day_%d.csv' % (day-1))
     scores_file = os.path.join(out_dir, 'predictions_day_%d.csv' % day)
@@ -42,7 +44,15 @@ def main(day):
         table['Missed Rounds'] = np.zeros((scores.shape[0], 1), dtype=int)
     else:
         # read the table of the previous round
-        table = pd.read_csv(table_file)        
+        table = pd.read_csv(table_file)
+
+        # fix usernames via fuzzy search
+        new_names = fuzzy_fix_names(scores['Name'].values, 
+                                    table['Name'].values, 
+                                    threshold=fuzzy_thr)
+        scores['Name'] = new_names
+    
+
     
     # check if there is a new user, give the lowest score.
     min_points = np.min(table.Points.values)

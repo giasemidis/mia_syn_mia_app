@@ -3,5 +3,6 @@
     "season": 2018,
     "dt_format": "%Y.%d.%m. %H:%M",
     "dt_pattern": "\\d{2,2}\\.\\d{2,2}\\. \\d{2,2}:\\d{2,2}",
-    "output_directory": "output"
+    "output_directory": "output",
+    "fuzzy_threshold": 85
 }
