@@ -21,8 +21,10 @@ def scrap_round_results(day, season):
     url = 'http://www.euroleague.net/main/results?gamenumber=%d&phasetypecode=RS&seasoncode=E%d' %(day, season)
     try:
         r  = requests.get(url)
-    except ConnectionError:
-        sys.exit('Connection Error. Check URL or internet connection')
+    except requests.exceptions.ConnectionError:
+        print('Warning: Connection Error. Check URL or internet connection')
+        raise
+#        sys.exit('Connection Error. Check URL or internet connection')
     
     data = r.text
 
