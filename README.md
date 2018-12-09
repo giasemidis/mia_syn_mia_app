@@ -33,7 +33,7 @@ The code has been developed and tested on a 64-bit version of Windows 10, Python
 
 There are two main files in the repository.
 
-1. `extract_predictons.py`, which reads the comments from a post, extracts the participants' predictions and calculates their score for this round. It checks whether a post is valid, i.e. it starts with a username and the prediction (8 numbers) follow or not. It writes these scores in an output (.csv) file. It requires three input (console) arguments (one is optional):
+1. `extract_predictons.py`, which reads the comments from a post, extracts the participants' predictions and calculates their score for this round. It checks whether a post is valid, i.e. it starts with a username and the prediction (8 numbers) follow, or not. It writes these scores in an output (.csv) file. It requires three input (console) arguments (one is optional):
     * `--post_id` or `-i`, the id of the post under consideration.
     * `--day or -d`,  an integer, the round of the regular season. This is used to store the output file, in the format `predictions_day_x.csv ` where `x` is the round number (i.e. `d`).
     * `--results_file` or `-r`, the file-name of the actual results of this round. The file must be a .txt file and results must be written as a sequence of 1 and 2, with or without spaces. **This is an optional file**. If a filename is not specified the script fetches the results from the Euroleague official page. In this case, a results file is saved on the output directory (see `config/config.json`).
