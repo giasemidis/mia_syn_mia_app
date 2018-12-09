@@ -46,7 +46,7 @@ def main(post_id, results_file, nday):
     fb_format = '%Y-%m-%dT%H:%M:%S+0000'
   
     # make graph
-    graph = fb.GraphAPI(access_token=token, version=2.7)
+    graph = fb.GraphAPI(access_token=token, version=3.0)
     # graph id = user_id_post_id
     idd = user_id+'_'+post_id
     # get text of post
