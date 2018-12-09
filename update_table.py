@@ -47,8 +47,8 @@ def main(day):
         table = pd.read_csv(table_file)
 
         # fix usernames via fuzzy search
-        new_names = fuzzy_fix_names(scores['Name'].values, 
-                                    table['Name'].values, 
+        new_names = fuzzy_fix_names(scores['Name'].values,
+                                    table['Name'].values,
                                     threshold=fuzzy_thr)
         scores['Name'] = new_names
     
