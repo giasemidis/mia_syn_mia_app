@@ -52,8 +52,6 @@ def main(day):
                                     threshold=fuzzy_thr)
         scores['Name'] = new_names
     
-
-    
     # check if there is a new user, give the lowest score.
     min_points = np.min(table.Points.values)
     
