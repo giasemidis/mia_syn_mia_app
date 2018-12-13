@@ -70,7 +70,8 @@ def main(post_id, results_file, nday):
             results = get_results(games, nday, season)
             # write results to file
             np.savetxt(results_file, results[None], delimiter=' ', fmt='%d')
-        except requests.exceptions.ConnectionError:
+        except (requests.exceptions.ConnectionError, AssertionError) as e:
+            print(e)
             # if there is a connection error, read results from file.
             print('Warning: Unable to fetch results from the internet. Try from flat file.')
             # if file does not exist, exit program and ask for file of results.
@@ -121,7 +122,9 @@ def main(post_id, results_file, nday):
 
             # check comment is prior game-times.
             ii = time < game_times_utc
+            offtime = []
             if not ii.all():
+                offtime.append((user, np.sum(~ii)))
                 print('Warning: %d Prediction(s) off time for user %s in comment id %s' 
                       % (np.sum(~ii), user, comment_id))
             # if comment after any game started, give 0 points for this game
@@ -151,6 +154,11 @@ def main(post_id, results_file, nday):
     # sort by score (descending) and by name (descending)
     df.rename_axis('Name', axis=0, inplace=True)
     df.sort_values(['Score', 'Name'], ascending=[False, True], inplace=True)
+    
+    np.save(os.path.join(out_dir, 'offtime'), offtime)
+    np.savez(os.path.join(out_dir, 'mvp'), 
+             mvps=df[df['Score']==df['Score'].max()].index.values,
+             mvp_score=df['Score'].max())
     
     # save dataframe
     df.to_csv(os.path.join(out_dir, 'predictions_day_%d.csv' % nday), sep=',', 

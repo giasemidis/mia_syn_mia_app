@@ -77,10 +77,12 @@ def main(day):
 
     # did not play this round
     ii = np.isnan(df_merged['Score'])
+    dnp = []
     if any(ii):
         df_new.loc[ii, 'Score'] = min_score
         df_new.loc[ii, 'Missed Rounds'] += 1
         for name in df_new['Name'][ii].values:
+            dnp.append(name)
             print('Warning: %s did not play this round' % name)
 
     # check if user has missed more than four rounds.
@@ -104,6 +106,8 @@ def main(day):
                      np.arange(1, new_table.shape[0] + 1, dtype=int))
 
     print(new_table)
+    
+    np.save(os.path.join(out_dir, 'dnp'), dnp)
     
     new_table.to_csv(out_file, index=False)
 
