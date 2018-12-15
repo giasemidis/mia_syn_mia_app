@@ -79,7 +79,7 @@ def valid_post(message, comment_id=1, n_games=8):
         # check if predictions are either 1 or 2
         if not ((preds == 1) | (preds == 2)).all():
             yellow_flag1 = True
-            print('\nWarning: Incorrect prediction(s) for user %s in comment_id.' 
+            print('\nWarning: Incorrect prediction(s) for user %s in comment_id %s.' 
                   % (username, comment_id))
             print(message)
 #            preds[~((preds == 1) | (preds == 2))] = 0
