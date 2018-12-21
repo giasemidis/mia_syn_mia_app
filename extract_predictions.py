@@ -158,7 +158,7 @@ def main(post_id, results_file, nday):
     np.save(os.path.join(out_dir, 'offtime'), offtime)
     np.savez(os.path.join(out_dir, 'mvp'), 
              mvps=df[df['Score']==df['Score'].max()].index.values,
-             mvp_score=df['Score'].max())
+             mvp_score=df['Score'].max(), dnp_score=df['Score'].min())
     
     # save dataframe
     df.to_csv(os.path.join(out_dir, 'predictions_day_%d.csv' % nday), sep=',', 
