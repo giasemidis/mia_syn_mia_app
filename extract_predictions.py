@@ -104,7 +104,7 @@ def main(post_id, results_file, nday):
 
     score_dict = {}
     predict_dict = {}
-
+    offtime = []
     while True:
         for comment in comments['data']:
             comment_id = comment['id']
@@ -122,7 +122,6 @@ def main(post_id, results_file, nday):
 
             # check comment is prior game-times.
             ii = time < game_times_utc
-            offtime = []
             if not ii.all():
                 offtime.append((user, np.sum(~ii)))
                 print('Warning: %d Prediction(s) off time for user %s in comment id %s' 
