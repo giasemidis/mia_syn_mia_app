@@ -26,8 +26,11 @@ def fuzzy_fix_names(names_to_check, true_names, threshold=85):
             continue
         elif bestmatch[1] >= threshold:
             # close match, same user
-            new_names[n] = bestmatch[0]
-            print('Altered name in list. %s - %s - %d' % (name, bestmatch[0], bestmatch[1]))
+            if bestmatch[0] in new_names:
+                print('Name %s matched to %s, which already exists' %(name, bestmatch[0]))
+            else:
+                new_names[n] = bestmatch[0]
+                print('Altered name in list. %s - %s - %d' % (name, bestmatch[0], bestmatch[1]))
         elif bestmatch[1] < threshold:
             # possible new user
             print('New name in list. %s - %s - %d' % (name, bestmatch[0], bestmatch[1]))
