@@ -83,14 +83,15 @@ def main(day):
         df_new.loc[ii, 'Missed Rounds'] += 1
         for name in df_new['Name'][ii].values:
             dnp.append(name)
-            print('Warning: %s did not play this round' % name)
+            print('Warning (DNP): %s did not play this round' % name)
 
     # check if user has missed more than four rounds.
     mm = df_new['Missed Rounds'] >= 4
     if any(mm):
         for name in df_new['Name'][mm].values:
-            print('Warning: User %s has missed four rounds' % name)
-        
+            print('Warning (DIS): User %s has missed four rounds and is being dismissed' % name)
+            df_new.drop(df_new[df_new['Name']==name].index, inplace=True)
+
     # update points
     df_new['Points'] += df_new['Score'].astype(int)
     # update MVP
@@ -118,12 +119,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-d','--day', type=int,
                         help='the day (round) of the regular season')
-#    parser.add_argument('-t', '--table_file', type=str,
-#                        help="the id of the post")
-#    parser.add_argument('-s', '--scores_file', type=str,
-#                        help="the id of the post")
-#    parser.add_argument('-o', '--output', type=str,
-#                        help="output file to write data")
     args = parser.parse_args()
     if args.day is None:
         parser.print_help()
