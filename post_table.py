@@ -45,8 +45,10 @@ def main(day, post=False):
     temp = np.load(os.path.join(out_dir, 'mvp.npz'))
     mvps = temp['mvps']
     mvp_score = temp['mvp_score']
-    dnp_score = temp['dnp_score'] if 'dnp_score' in temp.keys() else 4
-    dnps = np.load(os.path.join(out_dir, 'dnp.npy'))
+    dnp_score = temp['dnp_score'] if 'dnp_score' in temp.keys() else None
+    temp = np.load(os.path.join(out_dir, 'dnp.npz'))
+    dnps = temp['dnp'] if 'dnp' in temp.keys() else []
+    disqs = temp['disq'] if 'disq' in temp.keys() else []
     offtime = np.load(os.path.join(out_dir, 'offtime.npy'))
 
     # ask for input optional message
@@ -55,23 +57,33 @@ def main(day, post=False):
     # form the string
     mvp_str = 'MVPs: ' + ', '.join(['@{}'.format(name) for name in mvps]) +\
                 ' με {}/{} σωστές προβλέψεις.'.format(mvp_score, n_games)
+
+    verb = 'λαμβάνει' if len(dnps) == 1 else 'λαμβάνουν'
     if len(dnps) >  0:
         dnp_str = 'DNP: ' + ', '.join(['@{}'.format(name) for name in dnps]) +\
-                    ' και λαμβάνει τη χαμηλότερη βαθμολογία ({})'.format(dnp_score) 
+           ' και {} τη χαμηλότερη βαθμολογία ({})'.format(verb, dnp_score) + '\n' 
     else:
-        dnp_str = 'DNP: -'
+        dnp_str = 'DNP: -' + '\n'
+
     if len(dnps) >  0:
         offtime_str = 'Off time: ' + ', '.join(['@{} ({})'.format(*u) for u 
-                                                in offtime])
+                                                in offtime]) + '\n'
     else:
-        offtime_str = 'Off time: -'
+        offtime_str = 'Off time: -' + '\n'
+
+    verb = 'συμπλήρωσε' if len(disqs) == 1 else 'συμπλήρωσαν'
+    if len(disqs) > 0:
+        disq_str = ', '.join(['@{}'.format(name) for name in disqs]) +\
+                    ' καθώς {} 4 απουσίες.'.format(verb) + '\n'
+    else:
+        disq_str = ''
+        
 
     # form the table
     table = pd.read_csv(table_file)
     maxlen = table['Name'].str.len().max()
     s = 'Rank--Name--MVP--Points--DNP\n'
     for row in table.values:
-#        s += '{:<8}\t{:<20}\t{:<3}\t{:<5}\t{:<3}\n'.format(*row)
         fillin = maxlen - len(row[1]) + 2
         s1 = '%d---%s' % (row[0], row[1]) if row[0] < 10 else '%d--%s' % (row[0], row[1])
         s += s1 + '-'*fillin + '%d--%d--%d\n' % (row[2], row[3], row[4])
@@ -82,7 +94,7 @@ def main(day, post=False):
     table_str = s
 
     # concatenate the string
-    stats = mvp_str + '\n' + dnp_str + '\n' + offtime_str + '\n'
+    stats = mvp_str + dnp_str + offtime_str + disq_str
 
     start = 'Αποτελέσματα Euroleague Day %d' % day
     end = '#feeldevotion #euroleague #day%d #mia_syn_mia #oneplusone' % day

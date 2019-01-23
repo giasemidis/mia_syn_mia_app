@@ -87,10 +87,13 @@ def main(day):
 
     # check if user has missed more than four rounds.
     mm = df_new['Missed Rounds'] >= 4
+    disq = []
     if any(mm):
         for name in df_new['Name'][mm].values:
             print('Warning (DIS): User %s has missed four rounds and is being dismissed' % name)
             df_new.drop(df_new[df_new['Name']==name].index, inplace=True)
+            disq.append(name)
+            
 
     # update points
     df_new['Points'] += df_new['Score'].astype(int)
@@ -108,7 +111,7 @@ def main(day):
 
     print(new_table)
     
-    np.save(os.path.join(out_dir, 'dnp'), dnp)
+    np.savez(os.path.join(out_dir, 'dnp'), dnp=dnp, disq=disq)
     
     new_table.to_csv(out_file, index=False)
 
