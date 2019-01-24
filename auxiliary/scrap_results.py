@@ -20,7 +20,7 @@ def scrap_round_results(day, season):
 
     url = 'http://www.euroleague.net/main/results?gamenumber=%d&phasetypecode=RS&seasoncode=E%d' %(day, season)
     try:
-        r  = requests.get(url)
+        r = requests.get(url)
     except requests.exceptions.ConnectionError:
         print('Warning: Connection Error. Check URL or internet connection')
         raise
@@ -31,6 +31,8 @@ def scrap_round_results(day, season):
     soup = BeautifulSoup(data, 'html.parser')
     query = soup.find('div', attrs={'class': 'wp-module wp-module-asidegames wp-module-5lfarqnjesnirthi'})
     results = query.find_all('div', attrs={'class': 'game played'})
+    liveresults = query.find_all('div', attrs={'class': 'game '})
+    results.extend(liveresults)
 
     assert(results != []), 'No results found, check if round is valid.'
 #    if results == []:
@@ -42,11 +44,10 @@ def scrap_round_results(day, season):
         teams = r.find_all('span', attrs={'class': 'name'})
         home_team = teams[0].string
         away_team = teams[1].string
-        if r.find('span', {'class': 'final'}).string.strip() == 'FINAL':
-            home_score = int(r.find('span', {'class': 'score homepts'})['data-score'])
-            away_score = int(r.find('span', {'class': 'score awaypts'})['data-score'])
-        else:
-            print('Warning: Not final yet')
+        h = r.find('span', {'class': 'score homepts'})['data-score']
+        a = r.find('span', {'class': 'score awaypts'})['data-score']
+        home_score = int(h) if h.isdigit() else 0
+        away_score = int(a) if a.isdigit() else 0
         data.append([home_team, away_team, home_score, away_score])
     
     data = pd.DataFrame(data, columns=['Home Team', 'Away Team', 'Home Score', 'Away Score'])
@@ -81,6 +82,7 @@ def get_results(games_fb, day, season):
         sys.exit('Error: nan values appeared after merging the DataFrames.')
 
     results = np.where(final['Home Score'] > final['Away Score'], 1, 2)
+    results[final['Home Score'] == final['Away Score']] = 0
 
     if results.shape[0] != games_fb.shape[0]:
 #        print("Warning: Shape of 'results' var is inconsistent")
