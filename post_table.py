@@ -56,7 +56,7 @@ def main(day, post=False):
     
     # form the string
     mvp_str = 'MVPs: ' + ', '.join(['@{}'.format(name) for name in mvps]) +\
-                ' με {}/{} σωστές προβλέψεις.'.format(mvp_score, n_games)
+                ' με {}/{} σωστές προβλέψεις.'.format(mvp_score, n_games) + '\n'
 
     verb = 'λαμβάνει' if len(dnps) == 1 else 'λαμβάνουν'
     if len(dnps) >  0:
@@ -65,16 +65,17 @@ def main(day, post=False):
     else:
         dnp_str = 'DNP: -' + '\n'
 
-    if len(dnps) >  0:
+    if len(offtime) >  0:
         offtime_str = 'Off time: ' + ', '.join(['@{} ({})'.format(*u) for u 
                                                 in offtime]) + '\n'
     else:
         offtime_str = 'Off time: -' + '\n'
 
-    verb = 'συμπλήρωσε' if len(disqs) == 1 else 'συμπλήρωσαν'
+    verb1 = 'αποβάλλεται' if len(disqs) == 1 else 'αποβάλλονται'
+    verb2 = 'συμπλήρωσε' if len(disqs) == 1 else 'συμπλήρωσαν'
     if len(disqs) > 0:
         disq_str = ', '.join(['@{}'.format(name) for name in disqs]) +\
-                    ' καθώς {} 4 απουσίες.'.format(verb) + '\n'
+                    ' {} καθώς {} 4 απουσίες.'.format(verb1, verb2) + '\n'
     else:
         disq_str = ''
         
