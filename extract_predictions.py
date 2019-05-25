@@ -24,7 +24,7 @@ win_unicode_console.enable()
 
 
 def main(post_id, results_file, nday):
-    '''TO DO: 
+    '''TO DO:
         1) come with a criterion to check whether a comment gives a prediction
             or just discusses things.
     '''
@@ -33,14 +33,14 @@ def main(post_id, results_file, nday):
     tokens = read_json(tokens_file)
     token = tokens['token']
     user_id = tokens['user_id']
-    
+
     # configuration file
     config_file = 'config/config.json'
     configs = read_json(config_file)
     n_games = configs['n_games']
     season = configs['season']
-    dt_format = configs['dt_format'] #'%Y.%d.%m. %H:%M' # '%Y-%m-%d %H:%M:%S'
-    pattern = configs['dt_pattern'] #'\d{2,2}\.\d{2,2}\. \d{2,2}:\d{2,2}'
+    dt_format = configs['dt_format']  # '%Y.%d.%m. %H:%M' # '%Y-%m-%d %H:%M:%S'
+    pattern = configs['dt_pattern']  # '\d{2,2}\.\d{2,2}\. \d{2,2}:\d{2,2}'
     out_dir = configs['output_directory']
 
     fb_format = '%Y-%m-%dT%H:%M:%S+0000'
@@ -58,11 +58,11 @@ def main(post_id, results_file, nday):
     if results_file is None:
         results_file = os.path.join(out_dir, 'results_day_%d.txt' % nday)
     repat = re.compile(pattern)
-    games_times = re.findall(pattern+'[^\d\n]*', message)
-    games = [[u.strip() for u in repat.sub('', game).split('-')] for 
-              game in games_times]
+    games_times = re.findall(pattern + r'[^\d\n]*', message)
+    games = [[u.strip() for u in repat.sub('', game).split('-')] for
+             game in games_times]
     if len(games) != n_games:
-        # check if the number of games identified in the post is correct. 
+        # check if the number of games identified in the post is correct.
         sys.exit('Number of games identified on FB post is incorrect')
     else:
         try:
@@ -73,13 +73,14 @@ def main(post_id, results_file, nday):
         except (requests.exceptions.ConnectionError, AssertionError) as e:
             print(e)
             # if there is a connection error, read results from file.
-            print('Warning: Unable to fetch results from the internet. Try from flat file.')
+            print('Warning: Unable to fetch results from the internet. '
+                  'Try from flat file.')
             # if file does not exist, exit program and ask for file of results.
             if not os.path.isfile(results_file):
                 sys.exit('Error: Provide correct file with the results.')
             # read actual results
             results = read_results(results_file)
-                            
+
     print(results)
 
     if results.shape[0] != n_games:
@@ -88,16 +89,17 @@ def main(post_id, results_file, nday):
     # extract game times from the post
     end_times = re.findall(pattern, message)
 
-    if end_times is None or end_times==[]:
+    if end_times is None or end_times == []:
         print('Warning: Deadline timestamp not found in post.')
         t_now = datetime.utcnow()
-        game_times_utc = np.array([t_now.replace(tzinfo=pytz.UTC) for i in range(n_games)])
+        game_times_utc = np.array([t_now.replace(tzinfo=pytz.UTC)
+                                   for i in range(n_games)])
     else:
-        game_times = [datetime.strptime(str(post_time.year)+'.'+t, dt_format) 
-                        for t in end_times]
-        game_times_utc = np.array([convert_timezone(t, 
-                                        from_tz='Europe/Athens', to_tz='UTC')
-                                  for t in game_times])
+        game_times = [datetime.strptime(str(post_time.year)+'.'+t, dt_format)
+                      for t in end_times]
+        game_times_utc = np.array([convert_timezone(t, from_tz='Europe/Athens',
+                                                    to_tz='UTC')
+                                   for t in game_times])
 
     # Get the comments from a post.
     comments = graph.get_connections(id=idd, connection_name='comments')
@@ -124,8 +126,8 @@ def main(post_id, results_file, nday):
             ii = time < game_times_utc
             if not ii.all():
                 offtime.append((user, np.sum(~ii)))
-                print('Warning: %d Prediction(s) off time for user %s in comment id %s' 
-                      % (np.sum(~ii), user, comment_id))
+                print('Warning: %d Prediction(s) off time for user %s in '
+                      'comment id %s' % (np.sum(~ii), user, comment_id))
             # if comment after any game started, give 0 points for this game
             pred[~ii] = 0
             score = np.sum(pred[ii] == results[ii])
@@ -141,11 +143,11 @@ def main(post_id, results_file, nday):
             break
 
     # make dataframe from users' score dictionary
-    df_scores = pd.DataFrame.from_dict(score_dict, orient='index', 
+    df_scores = pd.DataFrame.from_dict(score_dict, orient='index',
                                        columns=['Score'])
     # make dataframe from users' predictions dictionary
     df_pred = pd.DataFrame.from_dict(predict_dict, orient='index',
-                                     columns=['game_%d' % s for s in 
+                                     columns=['game_%d' % s for s in
                                               range(1, n_games+1)])
 
     # merge the two dataframe based on users' names.
@@ -153,14 +155,14 @@ def main(post_id, results_file, nday):
     # sort by score (descending) and by name (descending)
     df.rename_axis('Name', axis=0, inplace=True)
     df.sort_values(['Score', 'Name'], ascending=[False, True], inplace=True)
-    
+
     np.save(os.path.join(out_dir, 'offtime'), offtime)
-    np.savez(os.path.join(out_dir, 'mvp'), 
-             mvps=df[df['Score']==df['Score'].max()].index.values,
+    np.savez(os.path.join(out_dir, 'mvp'),
+             mvps=df[df['Score'] == df['Score'].max()].index.values,
              mvp_score=df['Score'].max(), dnp_score=df['Score'].min())
-    
+
     # save dataframe
-    df.to_csv(os.path.join(out_dir, 'predictions_day_%d.csv' % nday), sep=',', 
+    df.to_csv(os.path.join(out_dir, 'predictions_day_%d.csv' % nday), sep=',',
               index=True, encoding='utf-8')
 
     return
@@ -175,7 +177,7 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--day', type=int,
                         help="the day (round) of the regular season")
     args = parser.parse_args()
-    
+
     # results_file is optional.
     if args.post_id is None or args.day is None:
         parser.print_help()
