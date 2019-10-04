@@ -1,6 +1,6 @@
 {
-    "n_games": 8,
-    "season": 2018,
+    "n_games": 9,
+    "season": 2019,
     "dt_format": "%Y.%d.%m. %H:%M",
     "dt_pattern": "\\d{2,2}\\.\\d{2,2}\\. \\d{2,2}:\\d{2,2}",
     "output_directory": "output",

@@ -42,14 +42,14 @@ def main(day, post=False):
     # read the latest table file
     table_file = os.path.join(out_dir, 'table_day_%d.csv' % day)
     # load the mvp, dnp and offtime usernames produced by other scripts.
-    temp = np.load(os.path.join(out_dir, 'mvp.npz'))
+    temp = np.load(os.path.join(out_dir, 'mvp.npz'), allow_pickle=True)
     mvps = temp['mvps']
     mvp_score = temp['mvp_score']
     dnp_score = temp['dnp_score'] if 'dnp_score' in temp.keys() else None
-    temp = np.load(os.path.join(out_dir, 'dnp.npz'))
+    temp = np.load(os.path.join(out_dir, 'dnp.npz'), allow_pickle=True)
     dnps = temp['dnp'] if 'dnp' in temp.keys() else []
     disqs = temp['disq'] if 'disq' in temp.keys() else []
-    offtime = np.load(os.path.join(out_dir, 'offtime.npy'))
+    offtime = np.load(os.path.join(out_dir, 'offtime.npy'), allow_pickle=True)
 
     # ask for input optional message
     optional = input('Optional message:')
@@ -119,14 +119,12 @@ def main(day, post=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--day', type=int,
+    parser.add_argument('-d', '--day', type=int, required=True,
                         help='the day (round) of the regular season')
-    parser.add_argument('-p', '--post', type=bool,
-                        help=('a boolean (optional) that indicates whether '
+    parser.add_argument('-p', '--post', type=bool, default=False,
+                        help=('a boolean that indicates whether '
                               'the text is posted on FB. '
                               'Default value is False'))
     args = parser.parse_args()
-    if args.day is None:
-        parser.print_help()
-    else:
-        main(args.day, args.post)
+
+    main(args.day, args.post)

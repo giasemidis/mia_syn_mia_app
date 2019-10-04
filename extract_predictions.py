@@ -170,16 +170,12 @@ def main(post_id, results_file, nday):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--post_id', type=str,
+    parser.add_argument('-i', '--post_id', type=str, required=True,
                         help="the id of the post")
     parser.add_argument('-r', '--results_file', type=str,
-                        help="file with the results")
-    parser.add_argument('-d', '--day', type=int,
+                        help="file with the results", default=None)
+    parser.add_argument('-d', '--day', type=int, required=True,
                         help="the day (round) of the regular season")
     args = parser.parse_args()
 
-    # results_file is optional.
-    if args.post_id is None or args.day is None:
-        parser.print_help()
-    else:
-        main(args.post_id, args.results_file, args.day)
+    main(args.post_id, args.results_file, args.day)

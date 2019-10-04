@@ -33,13 +33,13 @@ def scrap_round_results(day, season):
     classstr = 'wp-module wp-module-asidegames wp-module-5lfarqnjesnirthi'
     query = soup.find('div', attrs={'class': classstr})
     results = query.find_all('div', attrs={'class': 'game played'})
-    liveresults = query.find_all('div', attrs={'class': 'game '})
+    liveresults = query.find_all('div', attrs={'class': 'game',
+                                               "data-played": "0"})
+    if liveresults != []:
+        print('Warning: %d games have not been played yet' % len(liveresults))
     results.extend(liveresults)
 
-    assert(results != []), 'No results found, check if round is valid.'
-    # if results == []:
-    #    raise Exception('No results found, check if round is valid.')
-    #    sys.exit('No results found, check if round is valid.')
+    assert (results != []), 'No results found, check if round is valid.'
 
     data = []
     for r in results:
