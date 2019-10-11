@@ -44,7 +44,7 @@ def valid_post(message, comment_id=1, n_games=8):
         red_flag1 = True
         print('\nWarning: Username not found')
         print(message)
-    elif len(find_name[0].strip()) > 25:
+    elif len(find_name[0].strip()) > 30:
         # Strings longer than 25 characters are *not* considered valid
         # usernames. They are probably text.
         red_flag1 = True
