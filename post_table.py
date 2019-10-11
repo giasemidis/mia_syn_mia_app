@@ -52,7 +52,8 @@ def main(day, post=False):
     offtime = np.load(os.path.join(out_dir, 'offtime.npy'), allow_pickle=True)
 
     # ask for input optional message
-    optional = input('Optional message:')
+    # optional = input('Optional message:')
+    optional = ''
 
     # form the string
     mvp_str = 'MVPs: ' + ', '.join(['@{}'.format(name) for name in mvps]) +\
@@ -104,7 +105,7 @@ def main(day, post=False):
              '\n' + table_str + '\n' + end)
 
     # write the text to a text file for inspection
-    with open('temp_table.txt', 'w', encoding='utf=8') as f:
+    with open('temp_table.txt', 'w', encoding='utf-8') as f:
         f.writelines(final)
 
     # post the final text to facebook.
