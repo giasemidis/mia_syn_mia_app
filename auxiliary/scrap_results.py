@@ -58,7 +58,7 @@ def scrap_round_results(day, season):
     return data
 
 
-def get_results(games_fb, day, season):
+def get_results(games_fb, day, season, team_mapping_file):
     '''
     Finds the results of the games of a round as ordered on the fb post.
     It returns the results as an numpy array.
@@ -74,7 +74,7 @@ def get_results(games_fb, day, season):
         print('Warning: Number of games is inconsistent')
 
     # first map teams in greek to official english names
-    mappednames = read_json('config/team_names_mapping.json')
+    mappednames = read_json(team_mapping_file)
     games_fb.replace(mappednames, inplace=True)
 
     # after converting the names of the teams, merge the two dataframes

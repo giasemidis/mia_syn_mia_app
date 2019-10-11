@@ -42,6 +42,7 @@ def main(post_id, results_file, nday):
     dt_format = configs['dt_format']  # '%Y.%d.%m. %H:%M' # '%Y-%m-%d %H:%M:%S'
     pattern = configs['dt_pattern']  # '\d{2,2}\.\d{2,2}\. \d{2,2}:\d{2,2}'
     out_dir = configs['output_directory']
+    team_mapping_file = configs['team_names_mapping_file']
 
     fb_format = '%Y-%m-%dT%H:%M:%S+0000'
 
@@ -67,7 +68,7 @@ def main(post_id, results_file, nday):
     else:
         try:
             # fetch results from the web
-            results = get_results(games, nday, season)
+            results = get_results(games, nday, season, team_mapping_file)
             # write results to file
             np.savetxt(results_file, results[None], delimiter=' ', fmt='%d')
         except (requests.exceptions.ConnectionError, AssertionError) as e:
