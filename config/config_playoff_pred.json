@@ -1,0 +1,8 @@
+{
+    "n_pred_teams": 8,
+    "season": 2019,
+    "dt_format": "%Y.%d.%m. %H:%M",
+    "output_directory": "output",
+    "team_names_mapping_file": "config/team_names_mapping_playoff_pred.json",
+    "deadline": "2019-10-03 20:00:00"
+}
