@@ -17,7 +17,7 @@ def main(post_id):
     user_id = tokens['user_id']
 
     # set output directory
-    config_file = 'config/config_playoff_pred33.json'
+    config_file = 'config/config_playoff_pred.json'
     if path.isfile(config_file):
         out_dir = read_json(config_file)['output_directory']
     else:
