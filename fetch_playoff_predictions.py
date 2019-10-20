@@ -1,5 +1,5 @@
 import argparse
-from os.path import join
+from os import path
 import facebook as fb
 import requests
 from auxiliary.io_json import read_json, write_json
@@ -16,10 +16,14 @@ def main(post_id):
     token = tokens['token']
     user_id = tokens['user_id']
 
-    # read configuration file
-    config_file = 'config/config_playoff_pred.json'
-    config = read_json(config_file)
-    output_dir = config['output_directory']
+    # set output directory
+    config_file = 'config/config_playoff_pred33.json'
+    if path.isfile(config_file):
+        out_dir = read_json(config_file)['output_directory']
+    else:
+        print('Warning: Configuration file not found.',
+              'Save to working directory')
+        out_dir = '.'
 
     # make graph
     graph = fb.GraphAPI(access_token=token, version=3.0)
@@ -39,7 +43,7 @@ def main(post_id):
             break
 
     # write comments to json file.
-    write_json(join(output_dir, 'playoff_predictions_fb_comments33.json'),
+    write_json(path.join(out_dir, 'playoff_predictions_fb_comments.json'),
                answers)
     return
 
