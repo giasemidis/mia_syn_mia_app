@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Oct  6 18:14:07 2018
-
-@author: Georgios
-"""
-
 import argparse
 import pandas as pd
 import numpy as np
@@ -12,6 +5,8 @@ import os
 import sys
 from auxiliary.io_json import read_json
 from auxiliary.fuzzy_fix_names import fuzzy_fix_names
+from auxiliary.get_playoffs_scores import get_playoffs_scores
+# from IPython import embed
 import win_unicode_console
 win_unicode_console.enable()
 
@@ -28,6 +23,19 @@ def main(day):
     configs = read_json(config_file)
     out_dir = configs['output_directory']
     fuzzy_thr = configs['fuzzy_threshold']
+    season = configs['season']
+    #
+    if ('playoff_predictions_file' in configs.keys() and
+            os.path.isfile(configs['playoff_predictions_file'])):
+        playoff_pred_file = configs['playoff_predictions_file']
+        penalties = (configs['playoff_predict_penalties']
+                     if 'playoff_predict_penalties' in configs else {})
+        playoffs_scores = get_playoffs_scores(playoff_pred_file, season, day,
+                                              penalties=penalties,
+                                              n_playoff_teams=8)
+        # print(playoffs_scores)
+    else:
+        print('Warning: Playoff predictions file not available.')
 
     table_file = os.path.join(out_dir, 'table_day_%d.csv' % (day-1))
     scores_file = os.path.join(out_dir, 'predictions_day_%d.csv' % day)
@@ -109,6 +117,14 @@ def main(day):
                                       ascending=[False, False, True])
     new_table.insert(0, 'Position',
                      np.arange(1, new_table.shape[0] + 1, dtype=int))
+    new_table = new_table.merge(playoffs_scores, how='left', left_on='Name',
+                                right_index=True)
+    new_table['Final_Score'] = new_table['Points'] + new_table['Playoff_Score']
+    new_table['Final_Rank'] = (new_table['Final_Score'].values
+                               .argsort()[::-1].argsort() + 1)
+    if new_table['Playoff_Score'].isna().any():
+        print('Users unknown')
+        # print(new_table[new_table['username'].isna()])
 
     print(new_table)
 
