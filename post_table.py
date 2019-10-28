@@ -83,17 +83,20 @@ def main(day, post=False):
 
     # form the table
     table = pd.read_csv(table_file)
-    maxlen = table['Name'].str.len().max()
-    s = 'Rank--Name--MVP--Points--DNP\n'
+    maxlen = int(table['Name'].str.len().max())
+    header = (table.columns.str.replace('Position', 'Rank')
+              .str.replace('Missed Rounds', 'DNP')
+              .str.replace('_', ' '))
+    widths = [len(u) + 2 if u != 'Name' else maxlen + 2 for u in header]
+    s = "".join(u.ljust(i) for u, i in zip(header, widths)) + '\n'
+    line_lenth = len(s) - 1
     for row in table.values:
-        fillin = maxlen - len(row[1]) + 2
-        s1 = ('%d---%s' % (row[0], row[1]) if row[0] < 10
-              else '%d--%s' % (row[0], row[1]))
-        s += s1 + '-'*fillin + '%d--%d--%d\n' % (row[2], row[3], row[4])
+        s1 = "".join(str(u).ljust(i) for u, i in zip(row, widths)) + '\n'
+        s += s1
         if row[0] == 4:
-            s += '-'*37 + '\n'
+            s += '-'*line_lenth + '\n'
         elif row[0] == 12:
-            s += '='*37 + '\n'
+            s += '='*line_lenth + '\n'
     table_str = s
 
     # concatenate the string
