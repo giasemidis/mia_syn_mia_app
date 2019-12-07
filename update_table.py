@@ -6,7 +6,6 @@ import sys
 from auxiliary.io_json import read_json
 from auxiliary.fuzzy_fix_names import fuzzy_fix_names
 from auxiliary.get_playoffs_scores import get_playoffs_scores
-# from IPython import embed
 import win_unicode_console
 win_unicode_console.enable()
 
@@ -120,11 +119,13 @@ def main(day):
     new_table = new_table.merge(playoffs_scores, how='left', left_on='Name',
                                 right_index=True)
     new_table['Final_Score'] = new_table['Points'] + new_table['Playoff_Score']
-    new_table['Final_Rank'] = (new_table['Final_Score'].values
-                               .argsort()[::-1].argsort() + 1)
+    ii = np.lexsort((new_table['Position'].values,
+                     -new_table['Final_Score'].values))
+    new_table['Final_Rank'] = ii.argsort() + 1
+    # new_table.sort_values(['Final_Score', 'Position'],
+    #                       ascending=[False, True])
     if new_table['Playoff_Score'].isna().any():
         print('Users unknown')
-        # print(new_table[new_table['username'].isna()])
 
     print(new_table)
 
