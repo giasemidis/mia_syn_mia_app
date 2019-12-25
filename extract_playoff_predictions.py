@@ -29,14 +29,6 @@ def main(comments):
     fb_format = '%Y-%m-%dT%H:%M:%S+0000'
 
     teams = list(teams_dict.keys())
-    # teams = ['Alba Berlin', 'Anadolu Efes', 'Armani Milano', 'Crvena Zvezda',
-    #          'CSKA Moscow', 'FC Barcelona', 'FC Bayern Munich',
-    #          'Fenerbahce Istanbul', 'Khimki Moscow region',
-    #          'Baskonia Vitoria-Gasteiz', 'ASVEL Villeurbanne',
-    #          'Maccabi Tel Aviv', 'Olympiakos Piraeus',
-    #          'Panathinaikos Athens',
-    #          'Real Madrid', 'Valencia Basket', 'Zalgiris Kaunas',
-    #          'Zenit St. Petersburg']
     regexps = ['(?e)(%s){e<=2}' % team for team in teams]
     header = ['team%d' % i for i in range(1, n_pred_teams + 1)]
 
