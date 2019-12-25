@@ -8,7 +8,6 @@ import sys
 import pytz
 import facebook as fb
 import requests
-import platform
 import logging
 from auxiliary.io_json import read_json
 from auxiliary.read_results import read_results
@@ -16,15 +15,9 @@ from auxiliary.convert_timezone import convert_timezone
 from auxiliary.valid_post import valid_post
 from auxiliary.scrap_results import get_results
 
-if platform.system() == 'Windows':
-    import win_unicode_console
-    win_unicode_console.enable()
-
 
 def main(post_id, results_file, nday):
-    '''TO DO:
-        1) come with a criterion to check whether a comment gives a prediction
-            or just discusses things.
+    '''
     '''
     logging.basicConfig(level=logging.INFO)
 
@@ -39,8 +32,8 @@ def main(post_id, results_file, nday):
     configs = read_json(config_file)
     n_games = configs['n_games']
     season = configs['season']
-    dt_format = configs['dt_format']  # '%Y.%d.%m. %H:%M' # '%Y-%m-%d %H:%M:%S'
-    pattern = configs['dt_pattern']  # '\d{2,2}\.\d{2,2}\. \d{2,2}:\d{2,2}'
+    dt_format = configs['dt_format']
+    pattern = configs['dt_pattern']
     out_dir = configs['output_directory']
     team_mapping_file = configs['team_names_mapping_file']
 

@@ -6,8 +6,6 @@ import os
 # import sys
 import facebook as fb
 from auxiliary.io_json import read_json
-import win_unicode_console
-win_unicode_console.enable()
 
 
 def main(day, post=False):

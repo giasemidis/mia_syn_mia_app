@@ -4,14 +4,9 @@ import numpy as np
 import os
 import sys
 import logging
-import platform
 from auxiliary.io_json import read_json
 from auxiliary.fuzzy_fix_names import fuzzy_fix_names
 from auxiliary.get_playoffs_scores import get_playoffs_scores
-
-if platform.system() == 'Windows':
-    import win_unicode_console
-    win_unicode_console.enable()
 
 
 def main(day):
