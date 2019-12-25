@@ -35,15 +35,13 @@ def main(post_id):
 
     # Get the comments from a post.
     comments = graph.get_connections(id=idd, connection_name='comments')
-    answers = []
-    answers.extend(comments['data'])
-    # %%
-    while True:
-        if 'next' in comments['paging']:
-            comments = requests.get(comments['paging']['next']).json()
-            answers.extend(comments['data'])
-        else:
-            break
+    answers = comments['data']
+
+    while 'next' in comments['paging']:
+        comments = requests.get(comments['paging']['next']).json()
+        answers.extend(comments['data'])
+
+    logging.info('%d comments fetched', len(answers))
 
     # write comments to json file.
     write_json(path.join(out_dir, 'playoff_predictions_fb_comments.json'),
