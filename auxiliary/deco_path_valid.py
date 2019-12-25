@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Oct  6 16:58:28 2018
-
-@author: Georgios
-"""
-
 import os.path
 import sys
 

@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Oct 12 11:42:24 2018
-
-@author: Georgios
-"""
-
 from dateutil import tz
 
 

@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Dec 10 02:11:36 2018
-
-@author: Georgios
-"""
 import argparse
 import pandas as pd
 import numpy as np
