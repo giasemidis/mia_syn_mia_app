@@ -1,14 +1,9 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Nov 25 16:54:49 2018
-
-@author: Georgios
-"""
 from bs4 import BeautifulSoup
 import requests
 import sys
 import pandas as pd
 import numpy as np
+import logging
 from auxiliary.io_json import read_json
 
 
@@ -17,13 +12,13 @@ def scrap_round_results(day, season):
     scrap the results from the euroleague web-page for a particular round.
     Returns results as a dataframe
     '''
-
+    logger = logging.getLogger(__name__)
     url = ('http://www.euroleague.net/main/results?gamenumber=%d'
            '&phasetypecode=RS&seasoncode=E%d' % (day, season))
     try:
         r = requests.get(url)
     except requests.exceptions.ConnectionError:
-        print('Warning: Connection Error. Check URL or internet connection')
+        logger.error('Connection Error. Check URL or internet connection')
         raise
         # sys.exit('Connection Error. Check URL or internet connection')
 
@@ -36,7 +31,7 @@ def scrap_round_results(day, season):
     liveresults = query.find_all('div', attrs={'class': 'game',
                                                "data-played": "0"})
     if liveresults != []:
-        print('Warning: %d games have not been played yet' % len(liveresults))
+        logger.warning('%d games have not been played yet' % len(liveresults))
     results.extend(liveresults)
 
     assert (results != []), 'No results found, check if round is valid.'
@@ -63,6 +58,7 @@ def get_results(games_fb, day, season, team_mapping_file):
     Finds the results of the games of a round as ordered on the fb post.
     It returns the results as an numpy array.
     '''
+    logger = logging.getLogger(__name__)
     # teams for round's games from the fb post. Convert lists to dataframe
     if isinstance(games_fb, list):
         games_fb = pd.DataFrame(games_fb, columns=['Home Team', 'Away Team'])
@@ -71,7 +67,7 @@ def get_results(games_fb, day, season, team_mapping_file):
     data = scrap_round_results(day, season)
 
     if games_fb.shape[0] != data.shape[0]:
-        print('Warning: Number of games is inconsistent')
+        logger.warning('Number of games is inconsistent')
 
     # first map teams in greek to official english names
     mappednames = read_json(team_mapping_file)
@@ -89,7 +85,6 @@ def get_results(games_fb, day, season, team_mapping_file):
     results[final['Home Score'] == final['Away Score']] = 0
 
     if results.shape[0] != games_fb.shape[0]:
-        # print("Warning: Shape of 'results' var is inconsistent")
         sys.exit("Error: Shape of 'results' var is inconsistent.")
 
     return results

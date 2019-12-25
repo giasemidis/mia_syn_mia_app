@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Oct  3 23:53:57 2018
-
-@author: Georgios
-"""
 import argparse
 import numpy as np
 import pandas as pd
@@ -14,13 +8,17 @@ import sys
 import pytz
 import facebook as fb
 import requests
+import platform
+import logging
 from auxiliary.io_json import read_json
 from auxiliary.read_results import read_results
 from auxiliary.convert_timezone import convert_timezone
 from auxiliary.valid_post import valid_post
 from auxiliary.scrap_results import get_results
-import win_unicode_console
-win_unicode_console.enable()
+
+if platform.system() == 'Windows':
+    import win_unicode_console
+    win_unicode_console.enable()
 
 
 def main(post_id, results_file, nday):
@@ -28,6 +26,8 @@ def main(post_id, results_file, nday):
         1) come with a criterion to check whether a comment gives a prediction
             or just discusses things.
     '''
+    logging.basicConfig(level=logging.INFO)
+
     # tokens file
     tokens_file = 'config/tokens.json'
     tokens = read_json(tokens_file)
@@ -72,17 +72,17 @@ def main(post_id, results_file, nday):
             # write results to file
             np.savetxt(results_file, results[None], delimiter=' ', fmt='%d')
         except (requests.exceptions.ConnectionError, AssertionError) as e:
-            print(e)
+            logging.error(e)
             # if there is a connection error, read results from file.
-            print('Warning: Unable to fetch results from the internet. '
-                  'Try from flat file.')
+            logging.warning('Unable to fetch results from the internet. '
+                            'Try from flat file.')
             # if file does not exist, exit program and ask for file of results.
             if not os.path.isfile(results_file):
                 sys.exit('Error: Provide correct file with the results.')
             # read actual results
             results = read_results(results_file)
 
-    print(results)
+    logging.debug(results)
 
     if results.shape[0] != n_games:
         sys.exit('Results not valid')
@@ -91,7 +91,7 @@ def main(post_id, results_file, nday):
     end_times = re.findall(pattern, message)
 
     if end_times is None or end_times == []:
-        print('Warning: Deadline timestamp not found in post.')
+        logging.warning('Deadline timestamp not found in post.')
         t_now = datetime.utcnow()
         game_times_utc = np.array([t_now.replace(tzinfo=pytz.UTC)
                                    for i in range(n_games)])
@@ -120,21 +120,20 @@ def main(post_id, results_file, nday):
                                               n_games=n_games)
 
             if is_valid is False:
-                print('Comment id %s not valid' % comment_id)
+                logging.debug('Comment id %s not valid' % comment_id)
                 continue
 
             # check comment is prior game-times.
             ii = time < game_times_utc
             if not ii.all():
                 offtime.append((user, np.sum(~ii)))
-                print('Warning: %d Prediction(s) off time for user %s in '
-                      'comment id %s' % (np.sum(~ii), user, comment_id))
+                logging.warning('%d Prediction(s) off time for user %s in '
+                                'comment (id %s): %s',
+                                np.sum(~ii), user, comment_id, text)
             # if comment after any game started, give 0 points for this game
             pred[~ii] = 0
             score = np.sum(pred[ii] == results[ii])
 
-            # TO DO: check if user has given prediction and decide what to do.
-            # if user in users_dict.keys():
             score_dict[user] = int(score)
             predict_dict[user] = pred
 

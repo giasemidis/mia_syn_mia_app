@@ -4,6 +4,7 @@ import regex
 import os
 from datetime import datetime
 import pytz
+import logging
 from auxiliary.io_json import read_json
 from auxiliary.convert_timezone import convert_timezone
 
@@ -14,6 +15,8 @@ def main(comments):
     from the comments (of a facebok post) and converts them to a dataframe,
     which is saved to the disk.
     '''
+    logging.basicConfig(level=logging.INFO)
+
     # read config file
     config_file = 'config/config_playoff_pred.json'
     config = read_json(config_file)
@@ -47,8 +50,8 @@ def main(comments):
         time = time.replace(tzinfo=pytz.UTC)
         # check if comment is off time.
         if time > deadline:
-            print('Warning: comment id %s is off time.\n"%s"\n'
-                  % (comment_id, text))
+            logging.warning('Comment (id %s) is off time: "%s"',
+                            comment_id, text)
 
         text_copy = text.replace('\n', '')
         pred_teams = []
@@ -63,8 +66,8 @@ def main(comments):
             all_predictions.append(dict(zip(header, sorted(pred_teams))))
             usernames.append(username)
         else:
-            print('Warning: Comment id %s is not valid.\n"%s"\n'
-                  % (comment_id, text))
+            logging.warning('Comment (id %s) is not valid: "%s"',
+                            comment_id, text)
 
     # convert to dataframe
     df = pd.DataFrame(all_predictions, index=usernames)

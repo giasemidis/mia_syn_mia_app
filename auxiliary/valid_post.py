@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Oct 28 01:22:05 2018
-
-@author: Georgios
-"""
 import re
 import numpy as np
+import logging
 
 
 def valid_post(message, comment_id=1, n_games=8):
@@ -28,6 +23,8 @@ def valid_post(message, comment_id=1, n_games=8):
     valid, or
     if the prediction has 'a few' numbers other than 1 or 2, post still valid.
     '''
+    logger = logging.getLogger(__name__)
+
     red_flag1 = False
     red_flag2 = False
     red_flag3 = False
@@ -42,14 +39,14 @@ def valid_post(message, comment_id=1, n_games=8):
 
     if find_name == [] or find_name is None:
         red_flag1 = True
-        print('\nWarning: Username not found')
-        print(message)
+        logger.warning('Username not found in comment (id %s): "%s"',
+                       comment_id, message)
     elif len(find_name[0].strip()) > 30:
         # Strings longer than 25 characters are *not* considered valid
         # usernames. They are probably text.
         red_flag1 = True
-        print('\nWarning: Username not valid in comment id %s' % comment_id)
-        print(message)
+        logger.warning('Username not valid in comment (id %s): "%s"',
+                       comment_id, message)
     else:
         username = find_name[0].strip()
         # find when the next string of non-numeric characters appears
@@ -70,8 +67,8 @@ def valid_post(message, comment_id=1, n_games=8):
 
     if find_pred == [] or find_pred is None:
         red_flag2 = True
-        print('\nWarning: Prediction not found in comment id %s' % comment_id)
-        print(message)
+        logger.warning('Prediction not found in comment (id %s): "%s"',
+                       comment_id, message)
     else:
         # convert predictions to an array of integers
         preds = np.array([int(u) for u in find_pred])
@@ -79,39 +76,36 @@ def valid_post(message, comment_id=1, n_games=8):
         # check if predictions are either 1 or 2
         if not ((preds == 1) | (preds == 2)).all():
             yellow_flag1 = True
-            print('\nWarning: Incorrect prediction(s) for user %s '
-                  'in comment_id %s.' % (username, comment_id))
-            print(message)
-            # preds[~((preds == 1) | (preds == 2))] = 0
+            logger.warning('Incorrect prediction(s) for user %s in comment '
+                           '(id %s): "%s"', username, comment_id, message)
 
         # check if number of predictions is correct
         n_preds = preds.shape[0]
         if n_preds == n_games:
             pass
-        elif n_preds > n_games and n_preds < n_games+3:
+        elif n_preds > n_games and n_preds < n_games + 3:
             # if the number of predictions is more then 'n_games', keep the
             # first 'n_games'.
             # If the number of predictions is more than 'n_games'+3, then flag
             # the message as commentary.
-            print('\nWarning: More than %d predictions are given' % n_games)
+            logger.warning('More than %d predictions are given: "%s"',
+                           n_games, message)
             preds = preds[:n_games]
-            print(message)
             yellow_flag2 = True
-        elif n_preds < n_games and n_preds > n_games-3:
+        elif n_preds < n_games and n_preds > n_games - 3:
             # if the number of predictions is less than 'n_games', fill in
             # the remaining ones with zeros.
             # if the number of predictions is less than 'n_games'-3, e.g. 121,
             # then flag the message as commentary.
-            print('\nWarning: Less than %d predictions are given' % n_games)
-            preds = np.append(preds, np.zeros(n_games-preds.shape[0],
+            logger.warning('Less than %d predictions are given: "%s"',
+                           n_games, message)
+            preds = np.append(preds, np.zeros(n_games - preds.shape[0],
                                               dtype=int))
-            print(message)
             yellow_flag2 = True
         else:
             red_flag3 = True
-            print('\nWarning: This message is likely to be commentary '
-                  '(comment id %s)' % comment_id)
-            print(message)
+            logger.warning('This message is likely to be commentary '
+                           '(id %s): %s', comment_id, message)
 
     # if any of the red flags is true, the post is invalid.
     # if both the prediction values and the number are wrong, then it is

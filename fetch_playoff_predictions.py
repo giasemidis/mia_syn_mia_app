@@ -2,6 +2,7 @@ import argparse
 from os import path
 import facebook as fb
 import requests
+import logging
 from auxiliary.io_json import read_json, write_json
 
 
@@ -10,6 +11,8 @@ def main(post_id):
     This function fetches the comments from a facebook post and stores them
     in a json file.
     '''
+    logging.basicConfig(level=logging.INFO)
+
     # read token's file
     tokens_file = 'config/tokens.json'
     tokens = read_json(tokens_file)
@@ -21,8 +24,8 @@ def main(post_id):
     if path.isfile(config_file):
         out_dir = read_json(config_file)['output_directory']
     else:
-        print('Warning: Configuration file not found.',
-              'Save to working directory')
+        logging.warning('Configuration file not found. ',
+                        'Save to working directory')
         out_dir = '.'
 
     # make graph

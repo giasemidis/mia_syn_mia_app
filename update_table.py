@@ -3,17 +3,22 @@ import pandas as pd
 import numpy as np
 import os
 import sys
+import logging
+import platform
 from auxiliary.io_json import read_json
 from auxiliary.fuzzy_fix_names import fuzzy_fix_names
 from auxiliary.get_playoffs_scores import get_playoffs_scores
-import win_unicode_console
-win_unicode_console.enable()
+
+if platform.system() == 'Windows':
+    import win_unicode_console
+    win_unicode_console.enable()
 
 
 def main(day):
     '''To DO:
         1) Insert simple models for benchmarking
     '''
+    logging.basicConfig(level=logging.INFO)
 
     if day < 1:
         sys.exit('Round must be non-negative integer')
@@ -32,9 +37,8 @@ def main(day):
         playoffs_scores = get_playoffs_scores(playoff_pred_file, season, day,
                                               penalties=penalties,
                                               n_playoff_teams=8)
-        # print(playoffs_scores)
     else:
-        print('Warning: Playoff predictions file not available.')
+        logging.warning('Playoff predictions file not available.')
 
     table_file = os.path.join(out_dir, 'table_day_%d.csv' % (day-1))
     scores_file = os.path.join(out_dir, 'predictions_day_%d.csv' % day)
@@ -80,7 +84,7 @@ def main(day):
         df_new.loc[jj, 'MVP'] = 0
         df_new.loc[jj, 'Missed Rounds'] = day - 1
         for name in df_new['Name'][jj].values:
-            print('%s is a new player' % name)
+            logging.info('%s is a new player', name)
 
     # did not play this round
     ii = np.isnan(df_merged['Score'])
@@ -90,15 +94,15 @@ def main(day):
         df_new.loc[ii, 'Missed Rounds'] += 1
         for name in df_new['Name'][ii].values:
             dnp.append(name)
-            print('Warning (DNP): %s did not play this round' % name)
+            logging.warning('(DNP): %s did not play this round' % name)
 
     # check if user has missed more than four rounds.
     mm = df_new['Missed Rounds'] >= 4
     disq = []
     if any(mm):
         for name in df_new['Name'][mm].values:
-            print('Warning (DIS): User %s has missed four rounds and is being '
-                  'disqualified' % name)
+            logging.warning('(DIS): User %s has missed four rounds and '
+                            'is being disqualified', name)
             df_new.drop(df_new[df_new['Name'] == name].index, inplace=True)
             disq.append(name)
 
@@ -125,9 +129,9 @@ def main(day):
     # new_table.sort_values(['Final_Score', 'Position'],
     #                       ascending=[False, True])
     if new_table['Playoff_Score'].isna().any():
-        print('Users unknown')
+        logging.warning('Users unknown')
 
-    print(new_table)
+    logging.debug(new_table)
 
     np.savez(os.path.join(out_dir, 'dnp'), dnp=dnp, disq=disq)
 
