@@ -82,13 +82,20 @@ def get_results(games_fb, day, season, team_mapping_file):
         logger.error('Nan values appeared after merging the DataFrames.')
         sys.exit('Exit')
 
+    if final.shape[0] != games_fb.shape[0]:
+        logger.error("Shape of 'final' variable is inconsistent (%d)"
+                     % final.shape[0])
+        logger.info("This is likely due to incorrect naming of teams in "
+                    "FB post. Check the post for typos in teams' names")
+        logger.debug(final)
+        sys.exit('Exit')
+
     results = np.where(final['Home Score'] > final['Away Score'], 1, 2)
     results[final['Home Score'] == final['Away Score']] = 0
 
     if results.shape[0] != games_fb.shape[0]:
-        logger.error("Shape of 'results' variable is inconsistent (%d)" %
-                     results.shape[0])
-        logger.error(final)
+        logger.error("Shape of 'results' variable is inconsistent (%d)"
+                     % results.shape[0])
         sys.exit('Exit')
 
     return results
