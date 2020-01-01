@@ -77,7 +77,7 @@ def main(post_id, results_file, nday):
             # read actual results
             results = read_results(results_file)
 
-    logging.info(results)
+    logging.info('The results are: {}'.format(results))
 
     if results.shape[0] != n_games:
         logging.error('Results not valid')
@@ -92,7 +92,9 @@ def main(post_id, results_file, nday):
         game_times_utc = np.array([t_now.replace(tzinfo=pytz.UTC)
                                    for i in range(n_games)])
     else:
-        game_times = [datetime.strptime(str(post_time.year)+'.'+t, dt_format)
+        month = int(end_times[0].split('.')[1])
+        year = post_time.year if month > 7 else post_time.year + 1
+        game_times = [datetime.strptime(str(year) + '.' + t, dt_format)
                       for t in end_times]
         game_times_utc = np.array([convert_timezone(t, from_tz='Europe/Athens',
                                                     to_tz='UTC')
