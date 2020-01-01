@@ -88,6 +88,7 @@ def get_results(games_fb, day, season, team_mapping_file):
     if results.shape[0] != games_fb.shape[0]:
         logger.error("Shape of 'results' variable is inconsistent (%d)" %
                      results.shape[0])
+        logger.error(final)
         sys.exit('Exit')
 
     return results
