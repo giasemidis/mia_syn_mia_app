@@ -20,7 +20,7 @@ def scrap_round_results(day, season):
     except requests.exceptions.ConnectionError:
         logger.error('Connection Error. Check URL or internet connection')
         raise
-        # sys.exit('Connection Error. Check URL or internet connection')
+        # sys.exit('Exit')
 
     data = r.text
 
@@ -79,12 +79,15 @@ def get_results(games_fb, day, season, team_mapping_file):
                            right_on=['Home Team', 'Away Team'])
 
     if pd.isna(final.values).any():
-        sys.exit('Error: nan values appeared after merging the DataFrames.')
+        logger.error('Nan values appeared after merging the DataFrames.')
+        sys.exit('Exit')
 
     results = np.where(final['Home Score'] > final['Away Score'], 1, 2)
     results[final['Home Score'] == final['Away Score']] = 0
 
     if results.shape[0] != games_fb.shape[0]:
-        sys.exit("Error: Shape of 'results' var is inconsistent.")
+        logger.error("Shape of 'results' variable is inconsistent (%d)" %
+                     results.shape[0])
+        sys.exit('Exit')
 
     return results

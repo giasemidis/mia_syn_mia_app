@@ -57,7 +57,8 @@ def main(post_id, results_file, nday):
              game in games_times]
     if len(games) != n_games:
         # check if the number of games identified in the post is correct.
-        sys.exit('Number of games identified on FB post is incorrect')
+        logging.error('Number of games identified on FB post is incorrect')
+        sys.exit('Exit')
     else:
         try:
             # fetch results from the web
@@ -71,14 +72,16 @@ def main(post_id, results_file, nday):
                             'Try from flat file.')
             # if file does not exist, exit program and ask for file of results.
             if not os.path.isfile(results_file):
-                sys.exit('Error: Provide correct file with the results.')
+                logging.error('Provide correct file with the results.')
+                sys.exit('Exit')
             # read actual results
             results = read_results(results_file)
 
-    logging.debug(results)
+    logging.info(results)
 
     if results.shape[0] != n_games:
-        sys.exit('Results not valid')
+        logging.error('Results not valid')
+        sys.exit('Exit')
 
     # extract game times from the post
     end_times = re.findall(pattern, message)

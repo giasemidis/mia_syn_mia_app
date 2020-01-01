@@ -16,7 +16,8 @@ def main(day):
     logging.basicConfig(level=logging.INFO)
 
     if day < 1:
-        sys.exit('Round must be non-negative integer')
+        logging.error('Round must be non-negative integer')
+        sys.exit('Exit')
 
     config_file = 'config/config.json'
     configs = read_json(config_file)

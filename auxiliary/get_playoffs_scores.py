@@ -2,6 +2,7 @@ import pandas as pd
 import re
 import sys
 import requests
+import logging
 from bs4 import BeautifulSoup
 
 
@@ -10,14 +11,15 @@ def scrap_standings(season, n_round):
     Scraps the standings of the Euroleague games from the Euroleague's official
     site for the input season.
     '''
-
+    logger = logging.getLogger(__name__)
     url = ('http://www.euroleague.net/main/standings?gamenumber=%d&'
            'phasetypecode=RS++++++++&seasoncode=E%d'
            % (n_round, season))
     try:
         r = requests.get(url)
     except ConnectionError:
-        sys.exit('Connection Error. Check URL')
+        logger.error('Connection Error. Check URL')
+        sys.exit('Exit')
     data = r.text
     soup = BeautifulSoup(data, 'html.parser')
     tbl_cls = ('table responsive fixed-cols-1 table-left-cols-1 '
