@@ -93,7 +93,9 @@ def main(post_id, results_file, nday):
                                    for i in range(n_games)])
     else:
         month = int(end_times[0].split('.')[1])
-        year = post_time.year if month > 7 else post_time.year + 1
+        year = (post_time.year + 1 if (post_time.month == 12) and (month == 1)
+                else post_time.year)
+        logging.debug('%d' % year)
         game_times = [datetime.strptime(str(year) + '.' + t, dt_format)
                       for t in end_times]
         game_times_utc = np.array([convert_timezone(t, from_tz='Europe/Athens',
