@@ -11,9 +11,9 @@ import requests
 import logging
 from auxiliary.io_json import read_json
 from auxiliary.read_results import read_results
-from auxiliary.convert_timezone import convert_timezone
 from auxiliary.valid_post import valid_post
 from auxiliary.scrap_results import get_results
+from auxiliary.get_game_times_from_post import get_game_times_from_post
 
 
 def main(post_id, results_file, nday):
@@ -61,8 +61,9 @@ def main(post_id, results_file, nday):
         sys.exit('Exit')
     else:
         try:
-            # fetch results from the web
-            results = get_results(games, nday, season, team_mapping_file)
+            # fetch results and game-times from the web
+            results, game_times_utc = get_results(games, nday, season,
+                                                  team_mapping_file)
             # write results to file
             np.savetxt(results_file, results[None], delimiter=' ', fmt='%d')
         except (requests.exceptions.ConnectionError, AssertionError) as e:
@@ -77,30 +78,16 @@ def main(post_id, results_file, nday):
             # read actual results
             results = read_results(results_file)
 
+            logging.info('Get game-times from the FB post')
+            # extract game times from the post
+            get_game_times_from_post(pattern, message, dt_format,
+                                     post_time, n_games)
+
     logging.info('The results are: {}'.format(results))
 
     if results.shape[0] != n_games:
         logging.error('Results not valid')
         sys.exit('Exit')
-
-    # extract game times from the post
-    end_times = re.findall(pattern, message)
-
-    if end_times is None or end_times == []:
-        logging.warning('Deadline timestamp not found in post.')
-        t_now = datetime.utcnow()
-        game_times_utc = np.array([t_now.replace(tzinfo=pytz.UTC)
-                                   for i in range(n_games)])
-    else:
-        month = int(end_times[0].split('.')[1])
-        year = (post_time.year + 1 if (post_time.month == 12) and (month == 1)
-                else post_time.year)
-        logging.debug('%d' % year)
-        game_times = [datetime.strptime(str(year) + '.' + t, dt_format)
-                      for t in end_times]
-        game_times_utc = np.array([convert_timezone(t, from_tz='Europe/Athens',
-                                                    to_tz='UTC')
-                                   for t in game_times])
 
     # Get the comments from a post.
     comments = graph.get_connections(id=idd, connection_name='comments')

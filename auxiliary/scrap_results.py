@@ -4,6 +4,8 @@ import sys
 import pandas as pd
 import numpy as np
 import logging
+from datetime import datetime
+import pytz
 from auxiliary.io_json import read_json
 
 
@@ -45,9 +47,13 @@ def scrap_round_results(day, season):
         a = r.find('span', {'class': 'score awaypts'})['data-score']
         home_score = int(h) if h.isdigit() else 0
         away_score = int(a) if a.isdigit() else 0
-        data.append([home_team, away_team, home_score, away_score])
+        game_time_epoch = int(r.attrs['data-date'])
+        game_time_utc = datetime.fromtimestamp(game_time_epoch / 1000,
+                                               pytz.utc)
+        data.append([game_time_utc, home_team, away_team,
+                     home_score, away_score])
 
-    data = pd.DataFrame(data, columns=['Home Team', 'Away Team',
+    data = pd.DataFrame(data, columns=['Datetime', 'Home Team', 'Away Team',
                                        'Home Score', 'Away Score'])
 
     return data
@@ -69,8 +75,8 @@ def get_results(games_fb, day, season, team_mapping_file):
     if games_fb.shape[0] != data.shape[0]:
         logger.warning('Number of games is inconsistent')
 
-    # first map teams in greek to official english names
     mappednames = read_json(team_mapping_file)
+    # first map teams in greek to official english names
     games_fb.replace(mappednames, inplace=True)
 
     # after converting the names of the teams, merge the two dataframes
@@ -98,4 +104,4 @@ def get_results(games_fb, day, season, team_mapping_file):
                      % results.shape[0])
         sys.exit('Exit')
 
-    return results
+    return results, final['Datetime'].dt.to_pydatetime()
