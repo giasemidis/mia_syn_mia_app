@@ -4,7 +4,7 @@
     "dt_format": "%Y.%d.%m. %H:%M",
     "dt_pattern": "\\d{2,2}\\.\\d{2,2}\\. \\d{2,2}:\\d{2,2}",
     "output_directory": "output",
-    "fuzzy_threshold": 85,
+    "fuzzy_threshold": 87,
     "team_names_mapping_file": "config/team_names_mapping_gr.json",
     "playoff_predictions_file": "output/playoffs_predictions.csv",
     "playoff_predict_penalties": {
