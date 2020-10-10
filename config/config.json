@@ -7,5 +7,9 @@
     "fuzzy_threshold": 85,
     "team_names_mapping_file": "config/team_names_mapping_gr.json",
     "playoff_predictions_file": "output/playoffs_predictions.csv",
-    "playoff_predict_penalties": {}
+    "playoff_predict_penalties": {
+        "Marios Brnts": 1,
+        "Ilias Paraskevopoulos": 1,
+        "Marinos Psarras": 1
+    }
 }

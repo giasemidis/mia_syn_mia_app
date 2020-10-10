@@ -7,6 +7,7 @@ import pytz
 import logging
 from auxiliary.io_json import read_json
 from auxiliary.convert_timezone import convert_timezone
+# from IPython import embed
 
 
 def main(comments):
@@ -30,7 +31,7 @@ def main(comments):
 
     teams = list(teams_dict.keys())
     regexps = ['(?e)(%s){e<=2}' % team if team not in ['CSKA', 'Zenit', 'Real']
-               else '(?e)(%s){e<=1}' % team for team in teams]
+               else '(?e)(%s){e<1}' % team for team in teams]
     header = ['team%d' % i for i in range(1, n_pred_teams + 1)]
 
     all_predictions = []
@@ -52,10 +53,16 @@ def main(comments):
             r = regex.search(rxp, text, regex.IGNORECASE)
             if r is not None:
                 match = text[r.start():r.end()]
+                # print(team, match)
                 pred_teams.append(teams_dict[team])
                 text_copy = text_copy.replace(match, '').strip()
-        username = text_copy.replace('-', '').replace(',', '').strip()
+        username = (
+            text_copy.replace('-', '').
+            replace(',', '').replace('.', '').strip()
+        )
 
+        # if text.startswith('Malisiovas Andreas'):
+        #     embed()
         if len(pred_teams) == n_pred_teams:
             all_predictions.append(dict(zip(header, sorted(pred_teams))))
             usernames.append(username)
