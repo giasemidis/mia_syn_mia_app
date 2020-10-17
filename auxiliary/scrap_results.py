@@ -98,6 +98,10 @@ def get_results(games_fb, day, season, team_mapping_file):
 
     results = np.where(final['Home Score'] > final['Away Score'], 1, 2)
     results[final['Home Score'] == final['Away Score']] = 0
+    # ignore from the score games that were determined by judges
+    idx = ((final['Home Score'] == 20) & (final['Away Score'] == 0) |
+           (final['Home Score'] == 0) & (final['Away Score'] == 20))
+    results[idx] = 0
 
     if results.shape[0] != games_fb.shape[0]:
         logger.error("Shape of 'results' variable is inconsistent (%d)"
