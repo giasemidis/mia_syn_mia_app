@@ -14,6 +14,7 @@ from auxiliary.read_results import read_results
 from auxiliary.valid_post import valid_post
 from auxiliary.scrap_results import get_results
 from auxiliary.get_game_times_from_post import get_game_times_from_post
+from IPython import embed
 
 
 def main(post_id, results_file, nday):
@@ -42,7 +43,7 @@ def main(post_id, results_file, nday):
     # make graph
     graph = fb.GraphAPI(access_token=token, version=3.0)
     # graph id = user_id_post_id
-    idd = user_id+'_'+post_id
+    idd = user_id + '_' + post_id
     # get text of post
     post = graph.get_object(id=idd)
     message = post['message']
@@ -55,6 +56,7 @@ def main(post_id, results_file, nday):
     games_times = re.findall(pattern + r'[^\d\n]*', message)
     games = [[u.strip() for u in repat.sub('', game).split('-')] for
              game in games_times]
+    embed()
     if len(games) != n_games:
         # check if the number of games identified in the post is correct.
         logging.error('Number of games identified on FB post is incorrect')
@@ -89,6 +91,7 @@ def main(post_id, results_file, nday):
         logging.error('Results not valid')
         sys.exit('Exit')
 
+    embed()
     # Get the comments from a post.
     comments = graph.get_connections(id=idd, connection_name='comments')
 
@@ -134,8 +137,7 @@ def main(post_id, results_file, nday):
                                        columns=['Score'])
     # make dataframe from users' predictions dictionary
     df_pred = pd.DataFrame.from_dict(predict_dict, orient='index',
-                                     columns=['game_%d' % s for s in
-                                              range(1, n_games+1)])
+                                     columns=['-'.join(u) for u in games])
 
     # merge the two dataframe based on users' names.
     df = df_scores.merge(df_pred, left_index=True, right_index=True)
