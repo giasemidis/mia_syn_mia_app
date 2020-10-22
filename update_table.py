@@ -107,10 +107,12 @@ def main(day):
     # update MVP
     df_new.loc[df_new['Score'] == mvp_score, 'MVP'] += 1
     # convert colums to int type.
-    df_new[['MVP', 'Points', 'Missed Rounds']] = df_new[
-        ['MVP', 'Points', 'Missed Rounds']].astype(int)
+    df_new[['Score', 'MVP', 'Points', 'Missed Rounds']] = df_new[
+        ['Score', 'MVP', 'Points', 'Missed Rounds']].astype(int)
 
-    new_table = df_new[['Name', 'MVP', 'Points', 'Missed Rounds']].copy()
+    new_table = df_new[['Name', 'Score', 'Points',
+                        'MVP', 'Missed Rounds']].copy()
+    new_table.rename(columns={'Score': 'Round Score'}, inplace=True)
     # sort by points (desc), then by MVP (desc) and finally by name (asc)
     new_table = new_table.sort_values(by=['Points', 'MVP', 'Name'],
                                       ascending=[False, False, True])
