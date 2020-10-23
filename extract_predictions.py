@@ -14,7 +14,6 @@ from auxiliary.read_results import read_results
 from auxiliary.valid_post import valid_post
 from auxiliary.scrap_results import get_results
 from auxiliary.get_game_times_from_post import get_game_times_from_post
-from IPython import embed
 
 
 def main(post_id, results_file, nday):
@@ -56,7 +55,7 @@ def main(post_id, results_file, nday):
     games_times = re.findall(pattern + r'[^\d\n]*', message)
     games = [[u.strip() for u in repat.sub('', game).split('-')] for
              game in games_times]
-    embed()
+
     if len(games) != n_games:
         # check if the number of games identified in the post is correct.
         logging.error('Number of games identified on FB post is incorrect')
@@ -91,7 +90,6 @@ def main(post_id, results_file, nday):
         logging.error('Results not valid')
         sys.exit('Exit')
 
-    embed()
     # Get the comments from a post.
     comments = graph.get_connections(id=idd, connection_name='comments')
 
