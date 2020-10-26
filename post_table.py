@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import argparse
 import pandas as pd
-import numpy as np
 import os
 import facebook as fb
 from auxiliary.io_json import read_json
