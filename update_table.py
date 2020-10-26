@@ -4,7 +4,7 @@ import numpy as np
 import os
 import sys
 import logging
-from auxiliary.io_json import read_json
+from auxiliary.io_json import read_json, write_json
 from auxiliary.fuzzy_fix_names import fuzzy_fix_names
 from auxiliary.get_playoffs_scores import get_playoffs_scores
 
@@ -131,7 +131,10 @@ def main(day):
 
     logging.debug(new_table)
 
-    np.savez(os.path.join(out_dir, 'dnp'), dnp=dnp, disq=disq)
+    metadata_file = os.path.join(out_dir, 'metadata_day_%d.json' % day)
+    metadata = read_json(metadata_file)
+    metadata.update({'dnp': dnp, 'disq': disq})
+    write_json(metadata_file, metadata)
 
     new_table.to_csv(out_file, index=False)
 

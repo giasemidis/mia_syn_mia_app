@@ -9,7 +9,7 @@ import pytz
 import facebook as fb
 import requests
 import logging
-from auxiliary.io_json import read_json
+from auxiliary.io_json import read_json, write_json
 from auxiliary.read_results import read_results
 from auxiliary.valid_post import valid_post
 from auxiliary.scrap_results import get_results
@@ -95,7 +95,7 @@ def main(post_id, results_file, nday):
 
     score_dict = {}
     predict_dict = {}
-    offtime = []
+    offtime = {}
     while True:
         for comment in comments['data']:
             comment_id = comment['id']
@@ -114,7 +114,7 @@ def main(post_id, results_file, nday):
             # check comment is prior game-times.
             ii = time < game_times_utc
             if not ii.all():
-                offtime.append((user, np.sum(~ii)))
+                offtime.update({user: int(np.sum(~ii))})
                 logging.warning('%d Prediction(s) off time for user %s in '
                                 'comment (id %s): %s',
                                 np.sum(~ii), user, comment_id, text)
@@ -143,13 +143,17 @@ def main(post_id, results_file, nday):
     df.rename_axis('Name', axis=0, inplace=True)
     df.sort_values(['Score', 'Name'], ascending=[False, True], inplace=True)
 
-    np.save(os.path.join(out_dir, 'offtime'), offtime)
-    np.savez(os.path.join(out_dir, 'mvp'),
-             mvps=df[df['Score'] == df['Score'].max()].index.values,
-             mvp_score=df['Score'].max(), dnp_score=df['Score'].min())
+    metadata = {
+        'offtime': offtime,
+        'mvps': list(df[df['Score'] == df['Score'].max()].index),
+        'mvp_score': int(df['Score'].max()),
+        'dnp_score': int(df['Score'].min())
+    }
+    metadata_file = os.path.join(out_dir, 'metadata_day_%d.json' % nday)
+    write_json(metadata_file, metadata)
 
     # save dataframe
-    df.to_csv(os.path.join(out_dir, 'predictions_day_%d.csv' % nday), sep=',',
+    df.to_csv(os.path.join(out_dir, 'predictions_day_%d_.csv' % nday), sep=',',
               index=True, encoding='utf-8')
 
     return

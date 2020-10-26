@@ -34,14 +34,14 @@ def main(day, post=False):
     # read the latest table file
     table_file = os.path.join(out_dir, 'table_day_%d.csv' % day)
     # load the mvp, dnp and offtime usernames produced by other scripts.
-    temp = np.load(os.path.join(out_dir, 'mvp.npz'), allow_pickle=True)
-    mvps = temp['mvps']
-    mvp_score = temp['mvp_score']
-    dnp_score = temp['dnp_score'] if 'dnp_score' in temp.keys() else None
-    temp = np.load(os.path.join(out_dir, 'dnp.npz'), allow_pickle=True)
-    dnps = temp['dnp'] if 'dnp' in temp.keys() else []
-    disqs = temp['disq'] if 'disq' in temp.keys() else []
-    offtime = np.load(os.path.join(out_dir, 'offtime.npy'), allow_pickle=True)
+    metadata = read_json(os.path.join(out_dir, 'metadata_day_%d.json' % day))
+    mvps = metadata['mvps']
+    mvp_score = metadata['mvp_score']
+    dnp_score = (metadata['dnp_score'] if 'dnp_score' in metadata.keys()
+                 else None)
+    dnps = metadata['dnp'] if 'dnp' in metadata.keys() else []
+    disqs = metadata['disq'] if 'disq' in metadata.keys() else []
+    offtime = metadata['offtime']
 
     # ask for input optional message
     # optional = input('Optional message:')
@@ -60,8 +60,8 @@ def main(day, post=False):
         dnp_str = 'DNP: -' + '\n'
 
     if len(offtime) > 0:
-        offtime_str = 'Off time: ' + ', '.join(['@{} ({})'.format(*u) for u
-                                                in offtime]) + '\n'
+        offtime_str = 'Off time: ' + ', '.join(
+            ['@{} ({})'.format(k, v) for k, v in offtime.items()]) + '\n'
     else:
         offtime_str = 'Off time: -' + '\n'
 
