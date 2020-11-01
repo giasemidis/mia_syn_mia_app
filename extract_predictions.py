@@ -153,7 +153,7 @@ def main(post_id, results_file, nday):
     write_json(metadata_file, metadata)
 
     # save dataframe
-    df.to_csv(os.path.join(out_dir, 'predictions_day_%d_.csv' % nday), sep=',',
+    df.to_csv(os.path.join(out_dir, 'predictions_day_%d.csv' % nday), sep=',',
               index=True, encoding='utf-8')
 
     return
