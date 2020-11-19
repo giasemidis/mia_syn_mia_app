@@ -81,8 +81,9 @@ def main(post_id, results_file, nday):
 
             logging.info('Get game-times from the FB post')
             # extract game times from the post
-            get_game_times_from_post(pattern, message, dt_format,
-                                     post_time, n_games)
+            game_times_utc = get_game_times_from_post(pattern, message,
+                                                      dt_format,
+                                                      post_time, n_games)
 
     logging.info('The results are: {}'.format(results))
 

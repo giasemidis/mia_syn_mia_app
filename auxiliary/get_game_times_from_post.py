@@ -1,5 +1,5 @@
 import numpy as np
-import datetime as datetime
+from datetime import datetime
 import re
 import logging
 import pytz
