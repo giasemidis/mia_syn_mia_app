@@ -50,12 +50,13 @@ def main(post_id, results_file, nday):
 
     # fetch actual results from the web -- restrictions apply
     if results_file is None:
-        results_file = os.path.join(out_dir, 'results_day_%d.txt' % nday)
+        results_file = os.path.join(out_dir, 'results_day_%d.csv' % nday)
     repat = re.compile(pattern)
     games_times = re.findall(pattern + r'[^\d\n]*', message)
     games = [[u.strip() for u in repat.sub('', game).split('-')] for
              game in games_times]
 
+    fb_post_games_df = pd.DataFrame(games, columns=['Home', 'Away'])
     if len(games) != n_games:
         # check if the number of games identified in the post is correct.
         logging.error('Number of games identified on FB post is incorrect')
@@ -65,8 +66,6 @@ def main(post_id, results_file, nday):
             # fetch results and game-times from the web
             results, game_times_utc = get_results(games, nday, season,
                                                   team_mapping_file)
-            # write results to file
-            np.savetxt(results_file, results[None], delimiter=' ', fmt='%d')
         except (requests.exceptions.ConnectionError, AssertionError) as e:
             logging.error(e)
             # if there is a connection error, read results from file.
@@ -84,6 +83,9 @@ def main(post_id, results_file, nday):
             game_times_utc = get_game_times_from_post(pattern, message,
                                                       dt_format,
                                                       post_time, n_games)
+    # write results to csv file with names of teams
+    fb_post_games_df['Result'] = results
+    fb_post_games_df.to_csv(results_file, index=False)
 
     logging.info('The results are: {}'.format(results))
 
