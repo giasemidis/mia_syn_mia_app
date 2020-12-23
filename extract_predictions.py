@@ -49,8 +49,7 @@ def main(post_id, results_file, nday):
     post_time = datetime.strptime(post['created_time'], fb_format)
 
     # fetch actual results from the web -- restrictions apply
-    if results_file is None:
-        results_file = os.path.join(out_dir, 'results_day_%d.csv' % nday)
+    out_results_file = os.path.join(out_dir, 'results_day_%d.csv' % nday)
     repat = re.compile(pattern)
     games_times = re.findall(pattern + r'[^\d\n]*', message)
     games = [[u.strip() for u in repat.sub('', game).split('-')] for
@@ -85,7 +84,7 @@ def main(post_id, results_file, nday):
                                                       post_time, n_games)
     # write results to csv file with names of teams
     fb_post_games_df['Result'] = results
-    fb_post_games_df.to_csv(results_file, index=False)
+    fb_post_games_df.to_csv(out_results_file, index=False)
 
     logging.info('The results are: {}'.format(results))
 
