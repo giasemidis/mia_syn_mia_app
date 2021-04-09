@@ -9,7 +9,7 @@ from auxiliary.fuzzy_fix_names import fuzzy_fix_names
 from auxiliary.get_playoffs_scores import get_playoffs_scores
 
 
-def main(day):
+def main(day, sort_by_final=0):
     '''To DO:
         1) Insert simple models for benchmarking
     '''
@@ -113,19 +113,31 @@ def main(day):
     new_table = df_new[['Name', 'Score', 'Points',
                         'MVP', 'Missed Rounds']].copy()
     new_table.rename(columns={'Score': 'Round Score'}, inplace=True)
-    # sort by points (desc), then by MVP (desc) and finally by name (asc)
-    new_table = new_table.sort_values(by=['Points', 'MVP', 'Name'],
-                                      ascending=[False, False, True])
-    new_table.insert(0, 'Position',
-                     np.arange(1, new_table.shape[0] + 1, dtype=int))
+    # merge the score table with the playoff table
     new_table = new_table.merge(playoffs_scores, how='left', left_on='Name',
                                 right_index=True)
     new_table['Final_Score'] = new_table['Points'] + new_table['Playoff_Score']
-    ii = np.lexsort((new_table['Position'].values,
-                     -new_table['Final_Score'].values))
-    new_table['Final_Rank'] = ii.argsort() + 1
-    # new_table.sort_values(['Final_Score', 'Position'],
-    #                       ascending=[False, True])
+
+    if sort_by_final == 1:
+        # sort by final score (desc), points (desc), MVP (desc)
+        # and finally by Name (asc).
+        sort_list = ['Final_Score', 'Points', 'MVP', 'Name']
+        asc_list = [False, False, False, True]
+        new_table = new_table.sort_values(by=sort_list, ascending=asc_list)
+        new_table.insert(0, 'Position',
+                         np.arange(1, new_table.shape[0] + 1, dtype=int))
+    else:
+        # sort by points (desc), then by MVP (desc) and finally by name (asc)
+        sort_list = ['Points', 'MVP', 'Name']
+        asc_list = [False, False, True]
+        new_table = new_table.sort_values(by=sort_list, ascending=asc_list)
+        new_table.insert(0, 'Position',
+                         np.arange(1, new_table.shape[0] + 1, dtype=int))
+        # add the final rank
+        ii = np.lexsort((new_table['Position'].values,
+                         -new_table['Final_Score'].values))
+        new_table['Final_Rank'] = ii.argsort() + 1
+
     if new_table['Playoff_Score'].isna().any():
         logging.warning('Users unknown')
 
@@ -145,6 +157,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--day', type=int, required=True,
                         help='the day (round) of the regular season')
+    parser.add_argument('-s', '--sort-by', type=int, choices=[0, 1], default=0,
+                        help='1 for sorting by final score, 0 otherwise')
     args = parser.parse_args()
 
-    main(args.day)
+    main(args.day, args.sort_by)
