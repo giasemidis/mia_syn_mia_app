@@ -122,7 +122,10 @@ def main(post_id, results_file, nday):
                                 np.sum(~ii), user, comment_id, text)
             # if comment after any game started, give 0 points for this game
             pred[~ii] = 0
-            score = np.sum(pred[ii] == results[ii])
+            jj = results > 0  # include only finished games.
+            # E.g. if a player played less than 9 games, they will get 0, which
+            # will match with an unfinished game.
+            score = np.sum(pred[ii & jj] == results[ii & jj])
 
             score_dict[user] = int(score)
             predict_dict[user] = pred
